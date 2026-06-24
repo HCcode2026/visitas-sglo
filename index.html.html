@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario Semanal Interactivo de Visitas 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+        }
+        /* Transición suave para cambios de color en tarjetas */
+        .card-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <header class="bg-slate-900 text-white py-6 px-8 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <div class="flex items-center gap-3">
+                    <span class="bg-emerald-500 text-slate-900 text-xs font-bold px-2.5 py-1 rounded-full uppercase">Año 2026</span>
+                    <h1 class="text-2xl font-bold tracking-tight">PROGRAMACIÓN SEMANAL DE VISITAS DE CAMPO</h1>
+                </div>
+                <p class="text-slate-400 text-sm mt-1">Control interactivo, asignación de comités titulares dinámicos, alertas de feriados nacionales y estado por colores.</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <p class="text-xs text-slate-400">Sub Gerencia de Liquidación de Obras</p>
+                    <p class="text-sm font-semibold text-emerald-400">SGLO - Municipalidad Distrital de San Marcos</p>
+                </div>
+                <div class="h-10 w-10 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-400">
+                    <i class="fa-solid fa-map-location-dot text-lg"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="max-w-7xl mx-auto w-full px-6 py-6 flex-grow">
+        
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-6">
+            <div class="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
+                
+                <div class="flex items-center gap-3 flex-wrap">
+                    <button onclick="changeWeek(-1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition">
+                        <i class="fa-solid fa-chevron-left mr-1"></i> Sem. Anterior
+                    </button>
+                    
+                    <select id="weekSelector" onchange="onWeekSelectChange(this.value)" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 p-2.5 font-medium min-w-[280px]">
+                        </select>
+
+                    <button onclick="changeWeek(1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition">
+                        Sem. Siguiente <i class="fa-solid fa-chevron-right ml-1"></i>
+                    </button>
+
+                    <button onclick="goToCurrentWeek()" class="border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition">
+                        Semana Actual
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="relative w-full sm:w-64">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                        </div>
+                        <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Buscar obra, CUI o encargado..." class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-9 p-2.5">
+                    </div>
+                    <button onclick="clearDatabase()" class="text-rose-600 hover:bg-rose-50 border border-rose-200 px-3 py-2 rounded-lg text-sm font-medium transition" title="Reiniciar datos">
+                        <i class="fa-solid fa-rotate-left mr-1"></i> Resetear
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Total Semana</p>
+                    <p id="kpi-total" class="text-2xl font-bold text-slate-800 mt-1">0</p>
+                </div>
+                <div class="bg-slate-100 text-slate-600 p-3 rounded-lg"><i class="fa-solid fa-calendar-week"></i></div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Realizados</p>
+                    <p id="kpi-realizado" class="text-2xl font-bold text-emerald-600 mt-1">0</p>
+                </div>
+                <div class="bg-emerald-50 text-emerald-600 p-3 rounded-lg"><i class="fa-solid fa-circle-check"></i></div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Suspendidos</p>
+                    <p id="kpi-suspendido" class="text-2xl font-bold text-rose-600 mt-1">0</p>
+                </div>
+                <div class="bg-rose-50 text-rose-600 p-3 rounded-lg"><i class="fa-solid fa-circle-xmark"></i></div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Pendientes</p>
+                    <p id="kpi-pendiente" class="text-2xl font-bold text-sky-600 mt-1">0</p>
+                </div>
+                <div class="bg-sky-50 text-sky-600 p-3 rounded-lg"><i class="fa-solid fa-clock"></i></div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between col-span-2 md:col-span-1">
+                <div>
+                    <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Otros</p>
+                    <p id="kpi-otros" class="text-2xl font-bold text-amber-600 mt-1">0</p>
+                </div>
+                <div class="bg-amber-50 text-amber-600 p-3 rounded-lg"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 items-stretch">
+            <div class="bg-slate-100 rounded-2xl border border-slate-200/60 p-4 flex flex-col min-h-[500px]" id="column-0">
+                <div class="flex items-center justify-between mb-3">
+                    <div><h3 class="font-bold text-slate-800 text-base">LUNES</h3><p class="text-xs text-slate-500 font-semibold" id="date-label-0">--/--/--</p></div>
+                    <span id="holiday-badge-0" class="hidden bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Feriado 🏖️</span>
+                </div>
+                <div id="holiday-banner-0" class="hidden mb-3 bg-slate-200/50 border border-slate-300 rounded-lg p-2 text-center"><p class="text-xs text-slate-600 font-medium" id="holiday-text-0"></p></div>
+                <div class="flex-grow space-y-3" id="visits-container-0"></div>
+                <button onclick="openAddModal(0)" class="mt-4 w-full bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 font-medium py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-plus text-slate-400"></i> Programar Visita</button>
+            </div>
+
+            <div class="bg-slate-100 rounded-2xl border border-slate-200/60 p-4 flex flex-col min-h-[500px]" id="column-1">
+                <div class="flex items-center justify-between mb-3">
+                    <div><h3 class="font-bold text-slate-800 text-base">MARTES</h3><p class="text-xs text-slate-500 font-semibold" id="date-label-1">--/--/--</p></div>
+                    <span id="holiday-badge-1" class="hidden bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Feriado 🏖️</span>
+                </div>
+                <div id="holiday-banner-1" class="hidden mb-3 bg-slate-200/50 border border-slate-300 rounded-lg p-2 text-center"><p class="text-xs text-slate-600 font-medium" id="holiday-text-1"></p></div>
+                <div class="flex-grow space-y-3" id="visits-container-1"></div>
+                <button onclick="openAddModal(1)" class="mt-4 w-full bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 font-medium py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-plus text-slate-400"></i> Programar Visita</button>
+            </div>
+
+            <div class="bg-slate-100 rounded-2xl border border-slate-200/60 p-4 flex flex-col min-h-[500px]" id="column-2">
+                <div class="flex items-center justify-between mb-3">
+                    <div><h3 class="font-bold text-slate-800 text-base">MIÉRCOLES</h3><p class="text-xs text-slate-500 font-semibold" id="date-label-2">--/--/--</p></div>
+                    <span id="holiday-badge-2" class="hidden bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Feriado 🏖️</span>
+                </div>
+                <div id="holiday-banner-2" class="hidden mb-3 bg-slate-200/50 border border-slate-300 rounded-lg p-2 text-center"><p class="text-xs text-slate-600 font-medium" id="holiday-text-2"></p></div>
+                <div class="flex-grow space-y-3" id="visits-container-2"></div>
+                <button onclick="openAddModal(2)" class="mt-4 w-full bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 font-medium py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-plus text-slate-400"></i> Programar Visita</button>
+            </div>
+
+            <div class="bg-slate-100 rounded-2xl border border-slate-200/60 p-4 flex flex-col min-h-[500px]" id="column-3">
+                <div class="flex items-center justify-between mb-3">
+                    <div><h3 class="font-bold text-slate-800 text-base">JUEVES</h3><p class="text-xs text-slate-500 font-semibold" id="date-label-3">--/--/--</p></div>
+                    <span id="holiday-badge-3" class="hidden bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Feriado 🏖️</span>
+                </div>
+                <div id="holiday-banner-3" class="hidden mb-3 bg-slate-200/50 border border-slate-300 rounded-lg p-2 text-center"><p class="text-xs text-slate-600 font-medium" id="holiday-text-3"></p></div>
+                <div class="flex-grow space-y-3" id="visits-container-3"></div>
+                <button onclick="openAddModal(3)" class="mt-4 w-full bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 font-medium py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-plus text-slate-400"></i> Programar Visita</button>
+            </div>
+
+            <div class="bg-slate-100 rounded-2xl border border-slate-200/60 p-4 flex flex-col min-h-[500px]" id="column-4">
+                <div class="flex items-center justify-between mb-3">
+                    <div><h3 class="font-bold text-slate-800 text-base">VIERNES</h3><p class="text-xs text-slate-500 font-semibold" id="date-label-4">--/--/--</p></div>
+                    <span id="holiday-badge-4" class="hidden bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Feriado 🏖️</span>
+                </div>
+                <div id="holiday-banner-4" class="hidden mb-3 bg-slate-200/50 border border-slate-300 rounded-lg p-2 text-center"><p class="text-xs text-slate-600 font-medium" id="holiday-text-4"></p></div>
+                <div class="flex-grow space-y-3" id="visits-container-4"></div>
+                <button onclick="openAddModal(4)" class="mt-4 w-full bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 font-medium py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-plus text-slate-400"></i> Programar Visita</button>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-slate-900 text-slate-400 text-xs text-center py-4 border-t border-slate-800">
+        <p>© 2026 Sistema Integral de Obras y Recepciones. Prototipo desarrollado para SGLO - San Marcos.</p>
+    </footer>
+
+    <div id="visitModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-xl overflow-hidden card-transition">
+            <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white">
+                <h3 id="modalTitle" class="font-bold text-base">Programar Nueva Visita de Campo</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <form id="visitForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="visitId">
+                <input type="hidden" id="visitDayIndex">
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Fecha Programada</label>
+                        <input type="date" id="formFecha" required readonly class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg block w-full p-2.5 font-medium cursor-not-allowed">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Hora de Visita</label>
+                        <input type="text" id="formHora" placeholder="Ej. 09:30 AM" required class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-2.5">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Nombre de la Obra / Proyecto</label>
+                    <textarea id="formObra" rows="3" placeholder="Ingresa el nombre completo de la obra..." required class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-2.5 resize-none"></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Código Único (CUI)</label>
+                        <input type="text" id="formCUI" placeholder="Ej. 2657321" required class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Notificación / Carta</label>
+                        <select id="formNotificacion" required class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-2.5">
+                            <option value="Notificado">Notificado</option>
+                            <option value="Con carta">Con carta</option>
+                            <option value="Por programar">Por programar</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Encargado de la Visita (Recepción)</label>
+                    <select id="formEncargado" required class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-2.5">
+                        <option value="Gabriel">Gabriel</option>
+                        <option value="Luis">Luis</option>
+                        <option value="Hugo">Hugo</option>
+                        <option value="Néstor Antequera">Néstor Antequera</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Miembros Titulares del Comité</label>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="nuevoIntegranteInput" placeholder="Nombre del nuevo integrante..." class="bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block flex-grow p-2">
+                        <button type="button" onclick="agregarIntegranteLista()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition flex items-center gap-1">
+                            <i class="fa-solid fa-user-plus"></i> Agregar
+                        </button>
+                    </div>
+                    <div id="contenedorTitulares" class="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200 max-h-28 overflow-y-auto">
+                        </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Estado de la Visita</label>
+                    <select id="formEstado" required class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full p-2.5 font-semibold">
+                        <option value="Pendiente" class="text-sky-600">Pendiente</option>
+                        <option value="Realizado" class="text-emerald-600">Realizado</option>
+                        <option value="Suspendido" class="text-rose-600">Suspendido</option>
+                        <option value="Otros" class="text-amber-600">Otros</option>
+                    </select>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="closeModal()" class="border border-slate-300 hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold transition">Cancelar</button>
+                    <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 rounded-xl text-sm font-semibold transition">Guardar Programación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const FERIADOS_2026 = {
+            "2026-01-01": "Año Nuevo 🎆", "2026-04-02": "Jueves Santo ⛪", "2026-04-03": "Viernes Santo ⛪",
+            "2026-05-01": "Día del Trabajo 👷", "2026-06-07": "Batalla de Arica 🇵🇪", "2026-06-29": "San Pedro y San Pablo ⛵",
+            "2026-07-23": "Día de la Fuerza Aérea ✈️", "2026-07-28": "Fiestas Patrias 🇵🇪", "2026-07-29": "Fiestas Patrias 🇵🇪",
+            "2026-08-06": "Batalla de Junín 🐎", "2026-08-30": "Santa Rosa de Lima 🌹", "2026-10-08": "Combate de Angamos ⚓",
+            "2026-11-01": "Día de Todos los Santos 🕊️", "2026-12-08": "Inmaculada Concepción ⛪", "2026-12-09": "Batalla de Ayacucho ⚔️",
+            "2026-12-25": "Navidad 🎄"
+        };
+
+        const INITIAL_VISITS = [
+            {
+                id: "1",
+                fecha: "2026-06-23",
+                obra: "CONSTRUCCION DE CUNETA, GUARDAVIAS Y BARANDA; EN EL(LA) SERVICIO DE TRANSITABILIDAD VIAL INTERURBANA EN EL CASERIO DE RANRACUTA DEL CENTRO POBLADO SANTA CRUZ DE MOSNA DISTRITO DE SAN MARCOS, PROVINCIA HUARI, DEPARTAMENTO ANCASH",
+                cui: "2624139", hora: "09:30 AM", notificacion: "Notificado", encargado: "Gabriel",
+                titulares: ["Miguel Giron", "Segundo Giraldo", "Nestor Antequera"], estado: "Realizado"
+            },
+            {
+                id: "2",
+                fecha: "2026-06-24",
+                obra: "MEJORAMIENTO DEL SERVICIO DE MOVILIDAD URBANA EN LAS CALLES CHIPTA PAMPA - OGURAJGRA - LAS FLORES - USHNUPATAC EN EL CASERIO DE CHIPTA DEL CENTRO POBLADO SAN PEDRO DE CARASH DISTRITO DE SAN MARCOS DE LA PROVINCIA DE HUARI DEL DEPARTAMENTO DE ANCASH",
+                cui: "2631663", hora: "10:00 AM", notificacion: "Notificado", encargado: "Luis",
+                titulares: ["Miguel Giron", "Segundo Giraldo"], estado: "Otros"
+            }
+        ];
+
+        let visits = [];
+        let weeksOf2026 = [];
+        let currentWeekIndex = 25; // Junio 2026
+        
+        // Base de datos global dinámicamente expansible para titulares
+        let listaIntegrantesDisponibles = ["Miguel Giron", "Segundo Giraldo", "Nestor Antequera"];
+
+        window.onload = function() {
+            initDatabase();
+            generateWeeksOf2026();
+            populateWeekSelector();
+            goToWeek(currentWeekIndex);
+        };
+
+        function initDatabase() {
+            const stored = localStorage.getItem("visitas_campo_2026");
+            if (stored) { visits = JSON.parse(stored); } else { visits = [...INITIAL_VISITS]; saveToLocalStorage(); }
+        }
+
+        function saveToLocalStorage() { localStorage.setItem("visitas_campo_2026", JSON.stringify(visits)); }
+
+        function clearDatabase() {
+            if (confirm("¿Estás seguro de que deseas restablecer los datos originales?")) {
+                visits = [...INITIAL_VISITS]; saveToLocalStorage(); renderCurrentWeek();
+            }
+        }
+
+        function generateWeeksOf2026() {
+            weeksOf2026 = [];
+            let date = new Date("2026-01-05T00:00:00");
+            while (date.getFullYear() === 2026) { weeksOf2026.push(new Date(date)); date.setDate(date.getDate() + 7); }
+        }
+
+        function populateWeekSelector() {
+            const selector = document.getElementById("weekSelector");
+            selector.innerHTML = "";
+            weeksOf2026.forEach((monday, index) => {
+                const rangeStr = getRangeLabel(monday);
+                const option = document.createElement("option");
+                option.value = index;
+                option.textContent = `Semana ${index + 1}: ${rangeStr}`;
+                selector.appendChild(option);
+            });
+        }
+
+        function getRangeLabel(monday) {
+            const friday = new Date(monday); friday.setDate(monday.getDate() + 4);
+            return `${monday.toLocaleDateString('es-PE', {day:'numeric', month:'2-digit'})} al ${friday.toLocaleDateString('es-PE', {day:'numeric', month:'2-digit'})}`;
+        }
+
+        function changeWeek(direction) {
+            let nextIndex = currentWeekIndex + direction;
+            if (nextIndex >= 0 && nextIndex < weeksOf2026.length) { goToWeek(nextIndex); }
+        }
+
+        function onWeekSelectChange(index) { goToWeek(parseInt(index)); }
+
+        function goToWeek(index) { currentWeekIndex = index; document.getElementById("weekSelector").value = index; renderCurrentWeek(); }
+
+        function goToCurrentWeek() {
+            const today = new Date();
+            let comparisonDate = today.getFullYear() === 2026 ? today : new Date("2026-06-24T00:00:00");
+            const day = comparisonDate.getDay();
+            const diff = comparisonDate.getDate() - day + (day === 0 ? -6 : 1);
+            const targetMonday = new Date(comparisonDate.setDate(diff));
+            targetMonday.setHours(0,0,0,0);
+
+            let closestIndex = 0; let minDiff = Infinity;
+            weeksOf2026.forEach((monday, idx) => {
+                let diffTime = Math.abs(monday - targetMonday);
+                if (diffTime < minDiff) { minDiff = diffTime; closestIndex = idx; }
+            });
+            goToWeek(closestIndex);
+        }
+
+        function getWeekDaysDates(monday) {
+            let dates = [];
+            for (let i = 0; i < 5; i++) {
+                let dayDate = new Date(monday); dayDate.setDate(monday.getDate() + i);
+                dates.push(`${dayDate.getFullYear()}-${String(dayDate.getMonth() + 1).padStart(2, '0')}-${String(dayDate.getDate()).padStart(2, '0')}`);
+            }
+            return dates;
+        }
+
+        function renderCurrentWeek() {
+            const monday = weeksOf2026[currentWeekIndex];
+            const weekDates = getWeekDaysDates(monday);
+            const searchQuery = document.getElementById("searchInput").value.toLowerCase().trim();
+            let kpis = { total: 0, realizado: 0, suspendido: 0, pendiente: 0, otros: 0 };
+
+            for (let d = 0; d < 5; d++) {
+                const currentDateStr = weekDates[d];
+                document.getElementById(`date-label-${d}`).textContent = formatLocalDate(currentDateStr);
+                const holidayName = FERIADOS_2026[currentDateStr];
+                
+                // Elementos UI de Feriados
+                const badge = document.getElementById(`holiday-badge-${d}`);
+                const banner = document.getElementById(`holiday-banner-${d}`);
+                const txt = document.getElementById(`holiday-text-${d}`);
+                const col = document.getElementById(`column-${d}`);
+
+                if (holidayName) {
+                    badge.classList.remove("hidden"); banner.classList.remove("hidden");
+                    txt.textContent = holidayName; col.classList.add("bg-slate-200/80");
+                } else {
+                    badge.classList.add("hidden"); banner.classList.add("hidden"); col.classList.remove("bg-slate-200/80");
+                }
+
+                const dayVisits = visits.filter(v => v.fecha === currentDateStr && (
+                    searchQuery === "" || v.obra.toLowerCase().includes(searchQuery) || v.cui.includes(searchQuery) || v.encargado.toLowerCase().includes(searchQuery)
+                ));
+
+                const container = document.getElementById(`visits-container-${d}`);
+                container.innerHTML = "";
+
+                if (dayVisits.length === 0) {
+                    container.innerHTML = `<div class="h-24 border-2 border-dashed border-slate-300 rounded-xl flex items-center justify-center text-slate-400 text-xs">Sin visitas asignadas</div>`;
+                } else {
+                    dayVisits.forEach(v => {
+                        kpis.total++; kpis[v.estado.toLowerCase()]++;
+                        const styles = getStatusStyles(v.estado);
+                        const cardHtml = `
+                            <div class="bg-white rounded-xl border-l-4 ${styles.border} shadow-xs p-3.5 card-transition relative group hover:shadow-md">
+                                <div class="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button onclick="editVisit('${v.id}', ${d})" class="text-slate-400 hover:text-slate-700 p-1"><i class="fa-solid fa-pen text-xs"></i></button>
+                                    <button onclick="deleteVisit('${v.id}')" class="text-slate-400 hover:text-rose-600 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
+                                </div>
+                                <div class="flex items-center gap-1.5 text-[10px] text-slate-400 font-semibold mb-1.5">
+                                    <i class="fa-solid fa-clock"></i> <span>${v.hora}</span> <span class="mx-1">•</span>
+                                    <span class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 uppercase font-bold">${v.notificacion}</span>
+                                </div>
+                                <p class="text-xs text-slate-800 font-medium mb-2 pr-8 leading-relaxed">${v.obra}</p>
+                                <div class="text-[10px] text-slate-500 font-mono mb-3 bg-slate-50 py-0.5 px-2 inline-block rounded border border-slate-100">CUI: ${v.cui}</div>
+                                <div class="flex items-center gap-1.5 text-xs text-slate-600 mb-2 font-medium">
+                                    <div class="w-5 h-5 bg-slate-100 text-slate-500 rounded-full flex items-center justify-center text-[10px]"><i class="fa-solid fa-user-gear"></i></div>
+                                    <span>Encargado: <strong>${v.encargado}</strong></span>
+                                </div>
+                                <div class="text-[10px] text-slate-500 bg-slate-50 p-1.5 rounded border border-slate-100 mb-3">
+                                    <p class="font-semibold text-slate-600 mb-1 uppercase tracking-wider">Comité Titular:</p>
+                                    <div class="flex flex-wrap gap-1">
+                                        ${v.titulares.map(t => `<span class="bg-white border border-slate-200 px-1 py-0.5 rounded text-slate-600 font-medium">${t}</span>`).join('')}
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] uppercase font-bold text-slate-400">Estado</span>
+                                    <select onchange="updateVisitStatus('${v.id}', this.value)" class="text-xs font-semibold py-1 px-2.5 rounded-full border ${styles.bg} ${styles.text} focus:outline-none cursor-pointer">
+                                        <option value="Pendiente" ${v.estado === "Pendiente" ? "selected" : ""}>Pendiente</option>
+                                        <option value="Realizado" ${v.estado === "Realizado" ? "selected" : ""}>Realizado</option>
+                                        <option value="Suspendido" ${v.estado === "Suspendido" ? "selected" : ""}>Suspendido</option>
+                                        <option value="Otros" ${v.estado === "Otros" ? "selected" : ""}>Otros</option>
+                                    </select>
+                                </div>
+                            </div>
+                        `;
+                        container.insertAdjacentHTML('beforeend', cardHtml);
+                    });
+                }
+            }
+            document.getElementById("kpi-total").textContent = kpis.total;
+            document.getElementById("kpi-realizado").textContent = kpis.realizado;
+            document.getElementById("kpi-suspendido").textContent = kpis.suspendido;
+            document.getElementById("kpi-pendiente").textContent = kpis.pendiente;
+            document.getElementById("kpi-otros").textContent = kpis.otros;
+        }
+
+        function applyFilters() { renderCurrentWeek(); }
+        function formatLocalDate(isoString) { const parts = isoString.split("-"); return `${parts[2]}/${parts[1]}/${parts[0]}`; }
+
+        function getStatusStyles(estado) {
+            switch(estado) {
+                case "Realizado": return { border: "border-l-emerald-500 border-emerald-200", bg: "bg-emerald-50", text: "text-emerald-800" };
+                case "Suspendido": return { border: "border-l-rose-500 border-rose-200", bg: "bg-rose-50", text: "text-rose-800" };
+                case "Otros": return { border: "border-l-amber-500 border-amber-200", bg: "bg-amber-50", text: "text-amber-800" };
+                default: return { border: "border-l-sky-500 border-sky-200", bg: "bg-sky-50", text: "text-sky-800" };
+            }
+        }
+
+        // LÓGICA DE ACTUALIZACIÓN DINÁMICA DE REQUISITOS (INTEGRANTES)
+        function renderCheckboxesTitulares(seleccionados = []) {
+            const contenedor = document.getElementById("contenedorTitulares");
+            contenedor.innerHTML = "";
+            listaIntegrantesDisponibles.forEach(integrante => {
+                const estaChecked = seleccionados.includes(integrante) ? "checked" : "";
+                const checkboxHtml = `
+                    <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer p-1 hover:bg-slate-100 rounded transition">
+                        <input type="checkbox" name="titulares" value="${integrante}" ${estaChecked} class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"> 
+                        <span class="truncate">${integrante}</span>
+                    </label>
+                `;
+                contenedor.insertAdjacentHTML('beforeend', checkboxHtml);
+            });
+        }
+
+        function agregarIntegranteLista() {
+            const input = document.getElementById("nuevoIntegranteInput");
+            const nombre = input.value.trim();
+            if (nombre === "") { alert("Por favor, ingrese un nombre válido."); return; }
+            if (!listaIntegrantesDisponibles.includes(nombre)) { listaIntegrantesDisponibles.push(nombre); }
+
+            const checkboxes = document.getElementsByName("titulares");
+            const actualmenteSeleccionados = [];
+            checkboxes.forEach(cb => { if (cb.checked) actualmenteSeleccionados.push(cb.value); });
+            if (!currentlySelectedContains(actualmenteSeleccionados, nombre)) { actualmenteSeleccionados.push(nombre); }
+
+            renderCheckboxesTitulares(actualmenteSeleccionados);
+            input.value = ""; input.focus();
+        }
+
+        function currentlySelectedContains(arr, name) { return arr.includes(name); }
+
+        function openAddModal(dayIndex) {
+            document.getElementById("visitForm").reset();
+            document.getElementById("visitId").value = "";
+            document.getElementById("visitDayIndex").value = dayIndex;
+            document.getElementById("modalTitle").textContent = "Programar Nueva Visita de Campo";
+            
+            const monday = weeksOf2026[currentWeekIndex];
+            const dates = getWeekDaysDates(monday);
+            document.getElementById("formFecha").value = dates[dayIndex];
+
+            renderCheckboxesTitulares(listaIntegrantesDisponibles); 
+            document.getElementById("visitModal").classList.remove("hidden");
+        }
+
+        function editVisit(id, dayIndex) {
+            const visit = visits.find(v => v.id === id);
+            if (!visit) return;
+
+            document.getElementById("visitId").value = visit.id;
+            document.getElementById("visitDayIndex").value = dayIndex;
+            document.getElementById("modalTitle").textContent = "Modificar Programación de Visita";
+
+            document.getElementById("formFecha").value = visit.fecha;
+            document.getElementById("formHora").value = visit.hora;
+            document.getElementById("formObra").value = visit.obra;
+            document.getElementById("formCUI").value = visit.cui;
+            document.getElementById("formNotificacion").value = visit.notificacion;
+            document.getElementById("formEncargado").value = visit.encargado;
+            document.getElementById("formEstado").value = visit.estado;
+
+            // Inyecta si la visita trae un titular externo que no estaba en la sesión previa
+            visit.titulares.forEach(t => { if (!listaIntegrantesDisponibles.includes(t)) { listaIntegrantesDisponibles.push(t); } });
+            renderCheckboxesTitulares(visit.titulares);
+
+            document.getElementById("visitModal").classList.remove("hidden");
+        }
+
+        function closeModal() { document.getElementById("visitModal").classList.add("hidden"); }
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            const id = document.getElementById("visitId").value;
+            const fecha = document.getElementById("formFecha").value;
+            const hora = document.getElementById("formHora").value;
+            const obra = document.getElementById("formObra").value;
+            const cui = document.getElementById("formCUI").value;
+            const notificacion = document.getElementById("formNotificacion").value;
+            const encargado = document.getElementById("formEncargado").value;
+            const estado = document.getElementById("formEstado").value;
+
+            const checkboxes = document.getElementsByName("titulares");
+            const titulares = [];
+            checkboxes.forEach(cb => { if (cb.checked) titulares.push(cb.value); });
+
+            if (titulares.length === 0) { alert("Debes seleccionar al menos un miembro titular del comité."); return; }
+
+            if (id) {
+                const idx = visits.findIndex(v => v.id === id);
+                if (idx !== -1) { visits[idx] = { id, fecha, hora, obra, cui, notificacion, encargado, titulares, estado }; }
+            } else {
+                const newId = String(Date.now());
+                visits.push({ id: newId, fecha, hora, obra, cui, notificacion, encargado, titulares, estado });
+            }
+
+            saveToLocalStorage(); closeModal(); renderCurrentWeek();
+        }
+
+        function updateVisitStatus(id, newStatus) {
+            const idx = visits.findIndex(v => v.id === id);
+            if (idx !== -1) { visits[idx].estado = newStatus; saveToLocalStorage(); renderCurrentWeek(); }
+        }
+
+        function deleteVisit(id) {
+            if (confirm("¿Estás seguro de que deseas eliminar esta visita?")) {
+                visits = visits.filter(v => v.id !== id); saveToLocalStorage(); renderCurrentWeek();
+            }
+        }
+    </script>
+</body>
+</html>
