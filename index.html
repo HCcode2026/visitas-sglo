@@ -1,10 +1,3 @@
-Aquí tienes el código completo, corregido y listo para usar. 
-
-Al ser un archivo compuesto por **HTML5 nativo, JavaScript (ES Modules) y Tailwind CSS (mediante CDN)**, **no requiere un proceso de compilación** (como webpack o Babel). El navegador lo interpreta directamente ("compilación al vuelo"). 
-
-Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
-
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -16,14 +9,12 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
         .card-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
-
     <header class="bg-slate-900 text-white py-6 px-8 shadow-md">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
@@ -48,7 +39,6 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
             </div>
         </div>
     </header>
-
     <section class="max-w-7xl mx-auto w-full px-6 py-6 flex-grow">
         
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-6">
@@ -58,13 +48,43 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
                     <button onclick="changeWeek(-1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition flex items-center">
                         <i class="fa-solid fa-chevron-left mr-1.5"></i> Sem. Anterior
                     </button>
-                    <select id="weekSelector" onchange="onWeekSelectChange(this.value)" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 p-2.5 font-medium min-w-[280px]"></select>
+                    
+                    <!-- Selector de Semana Personalizado con Calendario Popover -->
+                    <div class="relative inline-block text-left" id="weekPickerContainer">
+                        <button type="button" onclick="toggleWeekCalendar()" id="weekPickerBtn" class="bg-slate-50 border border-slate-300 text-slate-700 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 p-2 py-2 font-medium min-w-[310px] flex items-center justify-between hover:bg-slate-100 transition shadow-sm">
+                            <span id="currentWeekRangeLabel" class="flex items-center text-slate-800">
+                                <i class="fa-regular fa-calendar-days text-slate-400 mr-2"></i> Cargando semana...
+                            </span>
+                            <i class="fa-solid fa-chevron-down text-xs text-slate-400 ml-2"></i>
+                        </button>
+                        
+                        <!-- Popover del Calendario -->
+                        <div id="calendarPopover" class="hidden absolute left-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-200/80 z-50 p-4 card-transition">
+                            <!-- Cabecera del Calendario -->
+                            <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+                                <button type="button" onclick="prevCalendarMonth()" class="p-1 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-700 transition">
+                                    <i class="fa-solid fa-chevron-left text-xs"></i>
+                                </button>
+                                <span id="calendarMonthLabel" class="font-bold text-slate-800 text-xs tracking-wider uppercase">JUNIO 2026</span>
+                                <button type="button" onclick="nextCalendarMonth()" class="p-1 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-700 transition">
+                                    <i class="fa-solid fa-chevron-right text-xs"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Grid de los nombres de los días -->
+                            <div class="grid grid-cols-7 gap-1 text-center text-[9px] font-bold text-slate-400 uppercase mb-2">
+                                <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+                            </div>
+                            
+                            <!-- Grid de días del mes agrupados en filas de semanas -->
+                            <div id="calendarDaysGrid" class="space-y-1"></div>
+                        </div>
+                    </div>
                     <button onclick="changeWeek(1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition flex items-center">
                         Sem. Siguiente <i class="fa-solid fa-chevron-right ml-1.5"></i>
                     </button>
                     <button onclick="goToCurrentWeek()" class="border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition">Semana Actual</button>
                 </div>
-
                 <div class="flex items-center gap-3">
                     <div class="relative w-full sm:w-64">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
@@ -73,10 +93,8 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
                         <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Buscar obra, CUI o encargado..." class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-9 p-2.5">
                     </div>
                 </div>
-
             </div>
         </div>
-
         <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
                 <div><p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Total Semana</p><p id="kpi-total" class="text-2xl font-bold text-slate-800 mt-1">0</p></div>
@@ -99,7 +117,6 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
                 <div class="bg-amber-50 text-amber-600 p-3 rounded-lg"><i class="fa-solid fa-triangle-exclamation"></i></div>
             </div>
         </div>
-
         <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 items-stretch">
             <!-- Columnas del calendario -->
             <template id="column-template">
@@ -120,7 +137,6 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
                     </button>
                 </div>
             </template>
-
             <div id="column-0"></div>
             <div id="column-1"></div>
             <div id="column-2"></div>
@@ -128,7 +144,6 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
             <div id="column-4"></div>
         </div>
     </section>
-
     <div id="visitModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
         <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-xl overflow-hidden card-transition">
             <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white">
@@ -141,7 +156,6 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
                 
                 <!-- Alerta interna para evitar el uso de alert() -->
                 <div id="modalError" class="hidden bg-rose-50 text-rose-800 border border-rose-200 rounded-lg p-3 text-xs font-semibold"></div>
-
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Fecha</label><input type="date" id="formFecha" required readonly class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg block w-full p-2.5 font-medium cursor-not-allowed"></div>
                     <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Hora</label><input type="text" id="formHora" placeholder="Ej. 09:30 AM" required class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg block w-full p-2.5"></div>
@@ -167,7 +181,6 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
             </form>
         </div>
     </div>
-
     <div id="deleteConfirmModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
         <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-sm overflow-hidden p-6 space-y-4">
             <div class="text-center">
@@ -183,37 +196,33 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
             </div>
         </div>
     </div>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
         // ==========================================
         // ⚠️ REEMPLAZA AQUÍ TUS CREDENCIALES DE FIREBASE ⚠️
         // ==========================================
         const firebaseConfig = {
-          apiKey: "AIzaSyA...",
+          apiKey: "AIzaSyD_TkF7LCe2twnpbj2vSoPy6KEsvHqYPvE",
           authDomain: "visitas-sglo-sanmarcos.firebaseapp.com",
           databaseURL: "https://visitas-sglo-sanmarcos-default-rtdb.firebaseio.com",
           projectId: "visitas-sglo-sanmarcos",
-          storageBucket: "visitas-sglo-sanmarcos.appspot.com",
-          messagingSenderId: "...",
-          appId: "..."
+          storageBucket: "visitas-sglo-sanmarcos.firebasestorage.app",
+          messagingSenderId: "272120103556",
+          appId: "1:272120103556:web:43c794d79cb45e4cc378d1",
+          measurementId: "G-YRQX0S3FWG"
         };
-
         // Inicialización y Control de Base de Datos
         let app = null;
         let db = null;
         let visitasRef = null;
         let useLocalStorage = false;
         let isFirebaseConnected = false;
-
         // Comprobación de credenciales reales vs placeholders
         const isPlaceholderConfig = !firebaseConfig.apiKey || 
                                     firebaseConfig.apiKey === "AIzaSyA..." || 
                                     firebaseConfig.apiKey.includes("...") ||
                                     firebaseConfig.databaseURL.includes("default-rtdb");
-
         if (isPlaceholderConfig) {
             console.warn("Utilizando Modo Local (LocalStorage) debido a credenciales no configuradas.");
             useLocalStorage = true;
@@ -227,14 +236,16 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
                 useLocalStorage = true;
             }
         }
-
         // Variables Globales
         let visits = {};
         let weeksOf2026 = [];
         let currentWeekIndex = 25; // Semana default: 22 de Junio
         let targetDeleteId = null;
         let listaIntegrantesDisponibles = ["Miguel Giron", "Segundo Giraldo", "Nestor Antequera"];
-
+        
+        // Mes y año a visualizar en el popover
+        let pickerYear = 2026;
+        let pickerMonth = 5; // Junio (0-indexado)
         const FERIADOS_2026 = {
             "2026-01-01": "Año Nuevo 🎆", "2026-04-02": "Jueves Santo ⛪", "2026-04-03": "Viernes Santo ⛪",
             "2026-05-01": "Día del Trabajo 👷", "2026-06-07": "Batalla de Arica 🇵🇪", "2026-06-29": "San Pedro y San Pablo 👑",
@@ -243,15 +254,21 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
             "2026-11-01": "Día de Todos los Santos 🕊️", "2026-12-08": "Inmaculada Concepción ⛪", "2026-12-09": "Batalla de Ayacucho ⚔️",
             "2026-12-25": "Navidad 🎄"
         };
-
         window.addEventListener('DOMContentLoaded', () => {
             initColumns();
             generateWeeksOf2026();
-            populateWeekSelector();
             goToCurrentWeek();
             loadVisits();
+            
+            // Cerrar el calendario al hacer clic fuera
+            document.addEventListener('click', (event) => {
+                const container = document.getElementById("weekPickerContainer");
+                const popover = document.getElementById("calendarPopover");
+                if (container && popover && !container.contains(event.target)) {
+                    popover.classList.add("hidden");
+                }
+            });
         });
-
         // Notificaciones Flotantes Modernas (Toast)
         window.showToast = function(message, type = 'info') {
             let toastContainer = document.getElementById('toast-container');
@@ -293,7 +310,6 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
                 }, 300);
             }, 3000);
         }
-
         // Cargar Programaciones (Firebase o LocalStorage)
         function loadVisits() {
             if (useLocalStorage) {
@@ -321,7 +337,6 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
                 });
             }
         }
-
         // Guardar Visita
         function saveVisitData(targetId, data, onSuccess, onError) {
             if (useLocalStorage) {
@@ -339,7 +354,6 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
                     .catch(onError);
             }
         }
-
         // Actualizar Estado de Visita
         function updateVisitStatusInDb(id, newStatus) {
             if (useLocalStorage) {
@@ -365,7 +379,6 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
                     });
             }
         }
-
         // Eliminar Visita de Base de Datos
         function deleteVisitFromDb(id, onSuccess, onError) {
             if (useLocalStorage) {
@@ -383,7 +396,6 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
                     .catch(onError);
             }
         }
-
         // Indicador de Sincronización en la Cabecera
         function updateConnectionBanner() {
             const badge = document.getElementById("db-status-badge");
@@ -396,7 +408,6 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
                 badge.innerHTML = `<span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping"></span> Sincronizado`;
             }
         }
-
         // Inyectar columnas dinámicamente
         function initColumns() {
             const days = ["LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES"];
@@ -415,11 +426,9 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
                 
                 const wrapper = clone.querySelector('div');
                 wrapper.id = `column-wrapper-${index}`;
-
                 document.getElementById(`column-${index}`).appendChild(clone);
             });
         }
-
         // Generar Calendario 2026
         function generateWeeksOf2026() {
             weeksOf2026 = [];
@@ -429,27 +438,24 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
                 date.setDate(date.getDate() + 7); 
             }
         }
-
-        // Popular selector de semanas
-        function populateWeekSelector() {
-            const selector = document.getElementById("weekSelector");
-            selector.innerHTML = "";
-            weeksOf2026.forEach((monday, index) => {
-                const friday = new Date(monday); friday.setDate(monday.getDate() + 4);
-                const rangeStr = `${monday.toLocaleDateString('es-PE', {day:'numeric', month:'2-digit'})} al ${friday.toLocaleDateString('es-PE', {day:'numeric', month:'2-digit'})}`;
-                const option = document.createElement("option");
-                option.value = index; option.textContent = `Semana ${index + 1}: ${rangeStr}`;
-                selector.appendChild(option);
-            });
-        }
-
+        // Cambiar semana por el botón de anterior/siguiente
         window.changeWeek = function(direction) {
             let nextIndex = currentWeekIndex + direction;
             if (nextIndex >= 0 && nextIndex < weeksOf2026.length) { goToWeek(nextIndex); }
         }
-        window.onWeekSelectChange = function(index) { goToWeek(parseInt(index)); }
-        function goToWeek(index) { currentWeekIndex = index; document.getElementById("weekSelector").value = index; renderCurrentWeek(); }
-
+        // Ir a una semana específica
+        function goToWeek(index) {
+            currentWeekIndex = index;
+            
+            const monday = weeksOf2026[index];
+            pickerYear = monday.getFullYear();
+            pickerMonth = monday.getMonth();
+            
+            updateWeekPickerLabel();
+            renderCalendarDays(); // Rerenderiza el popover si está abierto
+            renderCurrentWeek();
+        }
+        // Ir a la semana actual de hoy
         window.goToCurrentWeek = function() {
             const today = new Date();
             let compDate = today.getFullYear() === 2026 ? today : new Date("2026-06-24T00:00:00");
@@ -462,7 +468,6 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
             });
             goToWeek(closestIndex);
         }
-
         function getWeekDaysDates(monday) {
             let dates = [];
             for (let i = 0; i < 5; i++) {
@@ -471,16 +476,155 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
             }
             return dates;
         }
-
-        // Renderizar la semana actual
+        // ==========================================
+        // 📅 FUNCIONES DEL SELECTOR DE SEMANAS (CALENDARIO CUSTOM)
+        // ==========================================
+        
+        window.toggleWeekCalendar = function() {
+            const popover = document.getElementById("calendarPopover");
+            if (popover) {
+                if (popover.classList.contains("hidden")) {
+                    renderCalendarDays();
+                    popover.classList.remove("hidden");
+                } else {
+                    popover.classList.add("hidden");
+                }
+            }
+        }
+        window.closeWeekCalendar = function() {
+            const popover = document.getElementById("calendarPopover");
+            if (popover) popover.classList.add("hidden");
+        }
+        window.prevCalendarMonth = function() {
+            pickerMonth--;
+            if (pickerMonth < 0) {
+                pickerMonth = 11;
+                pickerYear--;
+            }
+            renderCalendarDays();
+        }
+        window.nextCalendarMonth = function() {
+            pickerMonth++;
+            if (pickerMonth > 11) {
+                pickerMonth = 0;
+                pickerYear++;
+            }
+            renderCalendarDays();
+        }
+        // Actualizar el texto del botón principal del selector
+        function updateWeekPickerLabel() {
+            const monday = weeksOf2026[currentWeekIndex];
+            if (!monday) return;
+            const friday = new Date(monday);
+            friday.setDate(monday.getDate() + 4);
+            
+            const options = { day: 'numeric', month: '2-digit' };
+            const rangeStr = `${monday.toLocaleDateString('es-PE', options)} al ${friday.toLocaleDateString('es-PE', options)}`;
+            
+            const label = document.getElementById("currentWeekRangeLabel");
+            if (label) {
+                label.innerHTML = `<i class="fa-regular fa-calendar-days text-emerald-500 mr-2 text-sm"></i> Semana ${currentWeekIndex + 1}: <strong class="text-slate-800">${rangeStr}</strong>`;
+            }
+        }
+        // Seleccionar una semana haciendo clic en una fila del calendario
+        window.selectWeekByMondayDate = function(mondayDateStr) {
+            const targetMonday = new Date(mondayDateStr + "T00:00:00");
+            let closestIndex = -1;
+            weeksOf2026.forEach((monday, idx) => {
+                if (monday.getFullYear() === targetMonday.getFullYear() &&
+                    monday.getMonth() === targetMonday.getMonth() &&
+                    monday.getDate() === targetMonday.getDate()) {
+                    closestIndex = idx;
+                }
+            });
+            
+            if (closestIndex !== -1) {
+                goToWeek(closestIndex);
+                closeWeekCalendar();
+                showToast(`Semana ${closestIndex + 1} cargada con éxito`, "success");
+            } else {
+                showToast("La semana elegida está fuera del año 2026.", "warning");
+            }
+        }
+        // Renderizar los días y las filas del calendario popover
+        function renderCalendarDays() {
+            const grid = document.getElementById("calendarDaysGrid");
+            if (!grid) return;
+            grid.innerHTML = "";
+            
+            const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            document.getElementById("calendarMonthLabel").textContent = `${months[pickerMonth]} ${pickerYear}`;
+            
+            // Buscar el lunes de la semana que contiene el día 1 del mes visible
+            let firstDay = new Date(pickerYear, pickerMonth, 1);
+            let dayOfWeek = firstDay.getDay(); // 0: Dom, 1: Lun...
+            let diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+            let startMonday = new Date(firstDay);
+            startMonday.setDate(firstDay.getDate() + diff);
+            
+            const activeMonday = weeksOf2026[currentWeekIndex];
+            
+            // Renderizamos 6 filas de semanas en la grilla
+            for (let w = 0; w < 6; w++) {
+                let weekMonday = new Date(startMonday);
+                weekMonday.setDate(startMonday.getDate() + w * 7);
+                
+                const weekMondayStr = `${weekMonday.getFullYear()}-${String(weekMonday.getMonth() + 1).padStart(2, '0')}-${String(weekMonday.getDate()).padStart(2, '0')}`;
+                
+                // Determinar si esta fila del calendario es la que está seleccionada actualmente
+                const isActiveWeek = activeMonday && 
+                                     weekMonday.getFullYear() === activeMonday.getFullYear() &&
+                                     weekMonday.getMonth() === activeMonday.getMonth() &&
+                                     weekMonday.getDate() === activeMonday.getDate();
+                
+                // La fila (semana) entera es interactiva
+                const weekRow = document.createElement("div");
+                weekRow.className = `grid grid-cols-7 gap-1 p-1 rounded-xl transition cursor-pointer group/week ${
+                    isActiveWeek ? 'bg-emerald-50 hover:bg-emerald-100 ring-1 ring-emerald-500/20' : 'hover:bg-slate-50'
+                }`;
+                weekRow.setAttribute("onclick", `selectWeekByMondayDate('${weekMondayStr}')`);
+                weekRow.setAttribute("title", `Seleccionar esta semana laboral`);
+                
+                // Renderizar los 7 días de esta fila/semana
+                for (let d = 0; d < 7; d++) {
+                    let dayDate = new Date(weekMonday);
+                    dayDate.setDate(weekMonday.getDate() + d);
+                    
+                    const isCurrentMonth = dayDate.getMonth() === pickerMonth;
+                    const isWeekend = d >= 5; // Sábado o Domingo (Fin de semana)
+                    const isToday = dayDate.toDateString() === new Date().toDateString();
+                    
+                    const dayCell = document.createElement("div");
+                    dayCell.className = `text-center py-1.5 text-xs rounded-lg transition-colors flex flex-col items-center justify-center relative ${
+                        isCurrentMonth ? 'text-slate-700' : 'text-slate-300'
+                    } ${
+                        isWeekend ? 'text-slate-400 font-normal bg-slate-50/50' : 'font-semibold'
+                    } ${
+                        isActiveWeek && !isWeekend ? 'text-emerald-950 font-bold' : ''
+                    } group-hover/week:text-emerald-900`;
+                    
+                    dayCell.innerHTML = `<span>${dayDate.getDate()}</span>`;
+                    
+                    // Pequeña marca para el día de hoy
+                    if (isToday) {
+                        dayCell.innerHTML += `<span class="absolute bottom-1 h-1 w-1 bg-emerald-500 rounded-full"></span>`;
+                    }
+                    
+                    weekRow.appendChild(dayCell);
+                }
+                
+                grid.appendChild(weekRow);
+            }
+        }
+        // ==========================================
+        // RENDERIZADOR DE LA SEMANA EN EL CALENDARIO PRINCIPAL
+        // ==========================================
         function renderCurrentWeek() {
             const monday = weeksOf2026[currentWeekIndex]; if(!monday) return;
             const weekDates = getWeekDaysDates(monday);
             const searchQuery = document.getElementById("searchInput").value.toLowerCase().trim();
             let kpis = { total: 0, realizado: 0, suspendido: 0, pendiente: 0, otros: 0 };
-
             const visitsArray = Object.keys(visits).map(key => ({ id: key, ...visits[key] }));
-
             for (let d = 0; d < 5; d++) {
                 const currentDateStr = weekDates[d];
                 const dateLabelEl = document.getElementById(`date-label-${d}`);
@@ -493,7 +637,6 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
                 const banner = document.getElementById(`holiday-banner-${d}`);
                 const txt = document.getElementById(`holiday-text-${d}`);
                 const colWrapper = document.getElementById(`column-wrapper-${d}`);
-
                 if (holidayName) { 
                     if (badge) badge.classList.remove("hidden"); 
                     if (banner) banner.classList.remove("hidden"); 
@@ -504,18 +647,15 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
                     if (banner) banner.classList.add("hidden"); 
                     if (colWrapper) colWrapper.classList.remove("bg-slate-200/80"); 
                 }
-
                 const dayVisits = visitsArray.filter(v => v.fecha === currentDateStr && (
                     searchQuery === "" || 
                     (v.obra || '').toLowerCase().includes(searchQuery) || 
                     (v.cui || '').toLowerCase().includes(searchQuery) || 
                     (v.encargado || '').toLowerCase().includes(searchQuery)
                 ));
-
                 const container = document.getElementById(`visits-container-${d}`); 
                 if (!container) continue;
                 container.innerHTML = "";
-
                 if (dayVisits.length === 0) {
                     container.innerHTML = `<div class="h-24 border-2 border-dashed border-slate-300 rounded-xl flex items-center justify-center text-slate-400 text-xs">Sin visitas</div>`;
                 } else {
@@ -532,9 +672,7 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
                         if(v.estado === "Realizado") styles = { border: "border-l-emerald-500 border-emerald-200", bg: "bg-emerald-50", text: "text-emerald-800" };
                         if(v.estado === "Suspendido") styles = { border: "border-l-rose-500 border-rose-200", bg: "bg-rose-50", text: "text-rose-800" };
                         if(v.estado === "Otros") styles = { border: "border-l-amber-500 border-amber-200", bg: "bg-amber-50", text: "text-amber-800" };
-
                         const listTitulares = (v.titulares || []).map(t => `<span class="bg-white border px-1.5 py-0.5 rounded text-slate-600 font-medium">${t}</span>`).join('');
-
                         const cardHtml = `
                             <div class="bg-white rounded-xl border-l-4 ${styles.border} shadow-xs p-3.5 card-transition relative group hover:shadow-md">
                                 <div class="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -567,10 +705,7 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
             document.getElementById("kpi-pendiente").textContent = kpis.pendiente;
             document.getElementById("kpi-otros").textContent = kpis.otros;
         }
-
         window.applyFilters = function() { renderCurrentWeek(); }
-
-        // Renderizar checkboxes del comité de selección
         window.renderCheckboxesTitulares = function(seleccionados = []) {
             const contenedor = document.getElementById("contenedorTitulares"); contenedor.innerHTML = "";
             listaIntegrantesDisponibles.forEach(integrante => {
@@ -582,8 +717,6 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
                 `);
             });
         }
-
-        // Agregar nuevo integrante a la lista de opciones
         window.agregarIntegranteLista = function() {
             const input = document.getElementById("nuevoIntegranteInput"); const nombre = input.value.trim();
             if (nombre === "") return;
@@ -593,19 +726,15 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
             if (!actualmenteSeleccionados.includes(nombre)) actualmenteSeleccionados.push(nombre);
             renderCheckboxesTitulares(actualmenteSeleccionados); input.value = ""; input.focus();
         }
-
-        // Abrir modal para registrar nueva visita
         window.openAddModal = function(dayIndex) {
             document.getElementById("visitForm").reset(); document.getElementById("visitId").value = "";
             document.getElementById("visitDayIndex").value = dayIndex;
             document.getElementById("modalTitle").textContent = "Programar Nueva Visita";
             document.getElementById("modalError").classList.add("hidden");
             const dates = getWeekDaysDates(weeksOf2026[currentWeekIndex]); document.getElementById("formFecha").value = dates[dayIndex];
-            renderCheckboxesTitulares([]); // Vacío por defecto para que marquen a quién deseen
+            renderCheckboxesTitulares([]); // Vacío por defecto
             document.getElementById("visitModal").classList.remove("hidden");
         }
-
-        // Cargar datos en el formulario para editar
         window.editVisit = function(id, dayIndex) {
             const v = visits[id]; if (!v) return;
             document.getElementById("visitId").value = id; document.getElementById("visitDayIndex").value = dayIndex;
@@ -620,16 +749,12 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
             vTitulares.forEach(t => { if (!listaIntegrantesDisponibles.includes(t)) { listaIntegrantesDisponibles.push(t); } });
             renderCheckboxesTitulares(vTitulares); document.getElementById("visitModal").classList.remove("hidden");
         }
-
         window.closeModal = function() { document.getElementById("visitModal").classList.add("hidden"); }
-
-        // Manejar el submit del formulario (Creación o Actualización)
         window.handleFormSubmit = function(event) {
             event.preventDefault();
             const id = document.getElementById("visitId").value;
             const errorDiv = document.getElementById("modalError");
             errorDiv.classList.add("hidden");
-
             const data = {
                 fecha: document.getElementById("formFecha").value,
                 hora: document.getElementById("formHora").value,
@@ -640,13 +765,11 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
                 estado: document.getElementById("formEstado").value,
                 titulares: Array.from(document.getElementsByName("titulares")).filter(cb => cb.checked).map(cb => cb.value)
             };
-
             if (data.titulares.length === 0) { 
                 errorDiv.textContent = "Alerta: Selecciona al menos un miembro titular para el comité.";
                 errorDiv.classList.remove("hidden");
                 return; 
             }
-
             const targetId = id ? id : 'visita_' + Date.now();
             
             saveVisitData(targetId, data, () => {
@@ -658,22 +781,17 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
                 errorDiv.classList.remove("hidden");
             });
         }
-
         window.updateVisitStatus = function(id, newStatus) {
             updateVisitStatusInDb(id, newStatus);
         }
-
         window.openDeleteModal = function(id) {
             targetDeleteId = id;
             document.getElementById("deleteConfirmModal").classList.remove("hidden");
         }
-
         window.closeDeleteModal = function() {
             targetDeleteId = null;
             document.getElementById("deleteConfirmModal").classList.add("hidden");
         }
-
-        // Escuchar confirmación de eliminación de visita
         document.getElementById("confirmDeleteBtn").addEventListener('click', () => {
             if (targetDeleteId) {
                 deleteVisitFromDb(targetDeleteId, () => {
@@ -689,4 +807,3 @@ Simplemente copia este bloque y pégalo en tu archivo para subirlo a GitHub:
     </script>
 </body>
 </html>
-```
