@@ -4,135 +4,166 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SGLO - Calendario Semanal de Visitas de Campo 2026</title>
-    <!-- Tailwind CSS -->
+    
+    <!-- 1. Estilos y Fuentes -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }</style>
 
-    <!-- Firebase SDK -->
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        .card-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    </style>
+
+    <!-- 2. Firebase SDKs (VERSIÓN COMPATIBLE/CLÁSICA) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-    <!-- ⚠️ PASO 1: PEGA TUS CREDENCIALES AQUÍ -->
-  <script>
-        // Configuración corregida
-        const firebaseConfig = {
-            apiKey: "AIzaSyD_TkF7LCE2twnpbj2vSOpy6KEsvHqYpVe",
-            authDomain: "visitas-sglo-sanmarcos.firebaseapp.com",
-            databaseURL: "https://visitas-sglo-sanmarcos-default-rtdb.firebaseio.com",
-            projectId: "visitas-sglo-sanmarcos",
-            storageBucket: "visitas-sglo-sanmarcos.appspot.com",
-            messagingSenderId: "272120103556",
-            appId: "1:272120103556:web:43c794d79cb45e4cc378d1"
-        };
-
-        // Inicialización para versión 8.10.1 (la que cargaste arriba)
-        firebase.initializeApp(firebaseConfig);
-    </script>
 </head>
 <body class="min-h-screen flex flex-col">
-    <!-- Banner -->
-    <div id="offline-banner" class="hidden bg-amber-500 text-slate-900 py-2 px-4 text-xs font-semibold flex items-center justify-center gap-2">
-        <i class="fa-solid fa-triangle-exclamation"></i> <span>Modo Local: Firebase no configurado.</span>
+
+    <!-- BANNER DE EMERGENCIA -->
+    <div id="offline-banner" class="hidden bg-amber-500 text-slate-900 py-2.5 px-4 text-xs font-semibold flex items-center justify-center gap-2 shadow-inner">
+        <i class="fa-solid fa-triangle-exclamation text-sm animate-pulse"></i>
+        <span><strong>Modo Local Activo:</strong> Sin conexión a la nube. Si este mensaje persiste, revisa tus credenciales de Firebase en el código.</span>
     </div>
 
-    <!-- Cabecera -->
-    <header class="bg-slate-900 text-white py-6 px-8 border-b border-slate-800">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div><h1 class="text-2xl font-bold">PROGRAMACIÓN SEMANAL DE VISITAS DE CAMPO</h1></div>
-            <div class="text-right">
-                <p class="text-xs text-slate-400">Sub Gerencia de Liquidación de Obras</p>
-                <p class="text-sm font-semibold text-emerald-400">SGLO - Municipalidad Distrital de San Marcos</p>
+    <!-- CABECERA PRINCIPAL -->
+    <header class="bg-slate-900 text-white py-6 px-8 shadow-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <div class="flex items-center gap-3">
+                    <span class="bg-emerald-500 text-slate-900 text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Año 2026</span>
+                    <h1 class="text-2xl font-bold tracking-tight">PROGRAMACIÓN SEMANAL DE VISITAS DE CAMPO</h1>
+                </div>
+                <p class="text-slate-400 text-sm mt-1">Planificador dinámico de comisiones, sincronizado con base de datos en tiempo real.</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <p class="text-xs text-slate-400 font-medium">Sub Gerencia de Liquidación de Obras</p>
+                    <p class="text-sm font-semibold text-emerald-400">SGLO - Municipalidad Distrital de San Marcos</p>
+                </div>
+                <div class="h-10 w-10 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-400">
+                    <i class="fa-solid fa-map-location-dot text-lg"></i>
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- Contenido -->
-    <section class="max-w-7xl mx-auto w-full px-6 py-6">
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-6 flex justify-between items-center">
-            <div class="flex gap-2">
-                <button onclick="changeWeek(-1)" class="bg-slate-100 px-3 py-2 rounded-lg text-sm font-semibold">Anterior</button>
-                <select id="weekSelector" onchange="onWeekSelectChange(this.value)" class="bg-slate-50 border border-slate-300 p-2 rounded-lg"></select>
-                <button onclick="changeWeek(1)" class="bg-slate-100 px-3 py-2 rounded-lg text-sm font-semibold">Siguiente</button>
+    <!-- CUERPO DE LA APLICACIÓN -->
+    <section class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex-grow">
+        
+        <!-- BARRA DE CONTROLES -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-6">
+            <div class="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
+                <div class="flex items-center gap-3 flex-wrap">
+                    <button onclick="window.changeWeek(-1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition flex items-center">
+                        <i class="fa-solid fa-chevron-left mr-1.5 text-xs"></i> Sem. Anterior
+                    </button>
+                    <select id="weekSelector" onchange="window.onWeekSelectChange(this.value)" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 p-2.5 font-semibold min-w-[280px]">
+                    </select>
+                    <button onclick="window.changeWeek(1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition flex items-center">
+                        Sem. Siguiente <i class="fa-solid fa-chevron-right ml-1.5 text-xs"></i>
+                    </button>
+                    <button onclick="window.goToCurrentWeek()" class="border border-slate-300 hover:bg-slate-50 text-slate-700 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition">
+                        Semana Actual
+                    </button>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="relative w-full sm:w-64">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                        </div>
+                        <input type="text" id="searchInput" oninput="window.applyFilters()" placeholder="Buscar obra, CUI o encargado..." class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-9 p-2.5">
+                    </div>
+                    <button onclick="window.clearDatabase()" class="text-rose-600 hover:bg-rose-50 border border-rose-200 px-3.5 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-1.5" title="Restaurar base de datos">
+                        <i class="fa-solid fa-rotate-left"></i> <span class="hidden md:inline">Reset</span>
+                    </button>
+                </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-5 gap-4" id="calendar-grid">
-            <!-- Columnas Lunes a Viernes -->
-            <script>
-                for(let i=0; i<5; i++) {
-                    document.write(`
-                        <div class="bg-slate-100 rounded-xl p-4 min-h-[500px]" id="column-${i}">
-                            <h3 class="font-bold text-slate-800" id="date-label-${i}">--/--</h3>
-                            <div class="space-y-3 mt-4" id="visits-container-${i}"></div>
-                            <button onclick="openAddModal(${i})" class="mt-4 w-full bg-white border border-slate-300 p-2 rounded-lg text-xs font-bold">+ Programar</button>
-                        </div>
-                    `);
-                }
-            </script>
+        <!-- INDICADORES CLAVE (KPIs) -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+                <div><p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Total Semana</p><p id="kpi-total" class="text-2xl font-bold text-slate-800 mt-1">0</p></div>
+                <div class="bg-slate-100 text-slate-600 p-3 rounded-lg"><i class="fa-solid fa-calendar-week"></i></div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+                <div><p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Realizados</p><p id="kpi-realizado" class="text-2xl font-bold text-emerald-600 mt-1">0</p></div>
+                <div class="bg-emerald-50 text-emerald-600 p-3 rounded-lg"><i class="fa-solid fa-circle-check"></i></div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+                <div><p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Suspendidos</p><p id="kpi-suspendido" class="text-2xl font-bold text-rose-600 mt-1">0</p></div>
+                <div class="bg-rose-50 text-rose-600 p-3 rounded-lg"><i class="fa-solid fa-circle-xmark"></i></div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+                <div><p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Pendientes</p><p id="kpi-pendiente" class="text-2xl font-bold text-sky-600 mt-1">0</p></div>
+                <div class="bg-sky-50 text-sky-600 p-3 rounded-lg"><i class="fa-solid fa-clock"></i></div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between col-span-2 md:col-span-1">
+                <div><p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Otros</p><p id="kpi-otros" class="text-2xl font-bold text-amber-600 mt-1">0</p></div>
+                <div class="bg-amber-50 text-amber-600 p-3 rounded-lg"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            </div>
+        </div>
+
+        <!-- PLANIFICADOR SEMANAL: GRILLA -->
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 items-stretch">
+            <div class="bg-slate-100 rounded-2xl border border-slate-200/60 p-4 flex flex-col min-h-[500px]" id="column-0"><div class="flex items-center justify-between mb-3"><div><h3 class="font-bold text-slate-800 text-base">LUNES</h3><p class="text-xs text-slate-500 font-semibold" id="date-label-0">--/--/--</p></div></div><div class="flex-grow space-y-3" id="visits-container-0"></div><button onclick="window.openAddModal(0)" class="mt-4 w-full bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-semibold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm"><i class="fa-solid fa-plus text-slate-400"></i> Programar Visita</button></div>
+            <div class="bg-slate-100 rounded-2xl border border-slate-200/60 p-4 flex flex-col min-h-[500px]" id="column-1"><div class="flex items-center justify-between mb-3"><div><h3 class="font-bold text-slate-800 text-base">MARTES</h3><p class="text-xs text-slate-500 font-semibold" id="date-label-1">--/--/--</p></div></div><div class="flex-grow space-y-3" id="visits-container-1"></div><button onclick="window.openAddModal(1)" class="mt-4 w-full bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-semibold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm"><i class="fa-solid fa-plus text-slate-400"></i> Programar Visita</button></div>
+            <div class="bg-slate-100 rounded-2xl border border-slate-200/60 p-4 flex flex-col min-h-[500px]" id="column-2"><div class="flex items-center justify-between mb-3"><div><h3 class="font-bold text-slate-800 text-base">MIÉRCOLES</h3><p class="text-xs text-slate-500 font-semibold" id="date-label-2">--/--/--</p></div></div><div class="flex-grow space-y-3" id="visits-container-2"></div><button onclick="window.openAddModal(2)" class="mt-4 w-full bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-semibold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm"><i class="fa-solid fa-plus text-slate-400"></i> Programar Visita</button></div>
+            <div class="bg-slate-100 rounded-2xl border border-slate-200/60 p-4 flex flex-col min-h-[500px]" id="column-3"><div class="flex items-center justify-between mb-3"><div><h3 class="font-bold text-slate-800 text-base">JUEVES</h3><p class="text-xs text-slate-500 font-semibold" id="date-label-3">--/--/--</p></div></div><div class="flex-grow space-y-3" id="visits-container-3"></div><button onclick="window.openAddModal(3)" class="mt-4 w-full bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-semibold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm"><i class="fa-solid fa-plus text-slate-400"></i> Programar Visita</button></div>
+            <div class="bg-slate-100 rounded-2xl border border-slate-200/60 p-4 flex flex-col min-h-[500px]" id="column-4"><div class="flex items-center justify-between mb-3"><div><h3 class="font-bold text-slate-800 text-base">VIERNES</h3><p class="text-xs text-slate-500 font-semibold" id="date-label-4">--/--/--</p></div></div><div class="flex-grow space-y-3" id="visits-container-4"></div><button onclick="window.openAddModal(4)" class="mt-4 w-full bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-semibold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm"><i class="fa-solid fa-plus text-slate-400"></i> Programar Visita</button></div>
         </div>
     </section>
 
-    <!-- Modal simplificado -->
+    <!-- MODAL DE OPERACIONES -->
     <div id="visitModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4">
-        <div class="bg-white rounded-2xl w-full max-w-lg p-6">
-            <h2 id="modalTitle" class="font-bold mb-4">Programar Visita</h2>
-            <form id="visitForm" onsubmit="handleFormSubmit(event)" class="space-y-3">
-                <input type="hidden" id="visitId"><input type="hidden" id="visitDayIndex">
-                <input type="date" id="formFecha" readonly class="w-full border p-2 rounded">
-                <input type="text" id="formHora" placeholder="Hora" required class="w-full border p-2 rounded">
-                <textarea id="formObra" placeholder="Nombre Obra" required class="w-full border p-2 rounded"></textarea>
-                <input type="text" id="formCUI" placeholder="CUI" required class="w-full border p-2 rounded">
-                <select id="formEncargado" class="w-full border p-2 rounded"><option>Gabriel</option><option>Luis</option><option>Hugo</option></select>
-                <div id="contenedorTitulares" class="grid grid-cols-2 gap-2 text-xs"></div>
-                <div class="flex justify-end gap-2 mt-4">
-                    <button type="button" onclick="closeModal()" class="px-4 py-2 border rounded">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-slate-900 text-white rounded">Guardar</button>
-                </div>
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6">
+            <h3 id="modalTitle" class="font-bold mb-4">Programar Visita</h3>
+            <form id="visitForm" onsubmit="window.handleFormSubmit(event)" class="space-y-4">
+                <input type="hidden" id="visitId">
+                <input type="hidden" id="visitDayIndex">
+                <input type="date" id="formFecha" required class="w-full border p-2 rounded-xl">
+                <input type="text" id="formHora" placeholder="Hora (ej. 09:00 AM)" required class="w-full border p-2 rounded-xl">
+                <textarea id="formObra" placeholder="Nombre de la Obra" required class="w-full border p-2 rounded-xl"></textarea>
+                <input type="text" id="formCUI" placeholder="CUI" required class="w-full border p-2 rounded-xl">
+                <select id="formEstado" class="w-full border p-2 rounded-xl">
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Realizado">Realizado</option>
+                    <option value="Suspendido">Suspendido</option>
+                    <option value="Otros">Otros</option>
+                </select>
+                <button type="submit" class="bg-slate-900 text-white w-full py-2 rounded-xl">Guardar</button>
             </form>
         </div>
     </div>
 
-    <!-- LÓGICA PRINCIPAL -->
     <script>
-        let visits = {}; let weeksOf2026 = []; let currentWeekIndex = 25; 
-        let listaIntegrantesDisponibles = ["Miguel Giron", "Segundo Giraldo", "Nestor Antequera"];
+        // ==========================================
+        // ⚠️ REEMPLAZA AQUÍ TUS CREDENCIALES DE FIREBASE ⚠️
+        // ==========================================
+            const firebaseConfig = {
+              apiKey: "AIzaSyD_TkF7LCe2twnpbj2vSoPy6KEsvHqYPvE",
+              authDomain: "visitas-sglo-sanmarcos.firebaseapp.com",
+              databaseURL: "https://visitas-sglo-sanmarcos-default-rtdb.firebaseio.com",
+              projectId: "visitas-sglo-sanmarcos",
+              storageBucket: "visitas-sglo-sanmarcos.firebasestorage.app",
+              messagingSenderId: "272120103556",
+              appId: "1:272120103556:web:43c794d79cb45e4cc378d1",
+              measurementId: "G-YRQX0S3FWG"
+            };
+            
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const analytics = getAnalytics(app);
+    
+            firebase.initializeApp(firebaseConfig);
 
-        document.addEventListener('DOMContentLoaded', () => {
-            initFirebase();
-            generateWeeksOf2026();
-            populateWeekSelector();
-            goToCurrentWeek();
-        });
-
-        function initFirebase() {
-            try {
-                if (!window.USER_FIREBASE_CONFIG || window.USER_FIREBASE_CONFIG.apiKey === "TU_API_KEY") throw new Error();
-                firebase.initializeApp(window.USER_FIREBASE_CONFIG);
-                firebase.database().ref('visitas').on('value', snap => { visits = snap.val() || {}; renderCurrentWeek(); });
-            } catch(e) { 
-                document.getElementById('offline-banner').classList.remove('hidden');
-                renderCurrentWeek();
-            }
-        }
-
-        // --- Funciones de control esenciales ---
-        function renderCurrentWeek() { /* Lógica de renderizado existente */ }
-        function openAddModal(idx) { document.getElementById('visitModal').classList.remove('hidden'); }
-        function closeModal() { document.getElementById('visitModal').classList.add('hidden'); }
-        function handleFormSubmit(e) { e.preventDefault(); /* Lógica de guardado */ closeModal(); }
-        // ... (Añadir resto de funciones de control necesarias)
+        // Lógica simplificada de carga
+        window.onload = function() {
+            console.log("Sistema SGLO cargado.");
+            // Aquí continuarías con tu lógica de renderizado...
+        };
     </script>
 </body>
 </html>
-```
-
-### ¿Qué hacer ahora?
-1. **Copia el bloque anterior.**
-2. **Pégalo en GitHub** (reemplazando el `index.html` viejo).
-3. **Pega tus credenciales** en el objeto `window.USER_FIREBASE_CONFIG`.
-4. **Guarda** y espera un minuto.
-5. **Recarga fuerte:** En la web, presiona `Ctrl + F5`. 
-
-Si el calendario sigue sin aparecer, envíame una captura de la **Consola de Errores** (presiona `F12` en tu teclado, ve a la pestaña que dice "Console" y toma una foto de cualquier texto en rojo que aparezca). Eso me dirá exactamente qué es lo que está bloqueando la carga.
