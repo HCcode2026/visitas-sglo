@@ -1,499 +1,716 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SGLO - Calendario Semanal Interactivo de Visitas 2026</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #f8fafc;
+    }
+    /* Transición de colores fluida en las tarjetas */
+    .card-transition {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+</style>
 
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
-        .card-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-    </style>
-</head>
-<body class="min-h-screen flex flex-col">
 
-    <!-- CABECERA PRINCIPAL -->
-    <header class="bg-slate-900 text-white py-6 px-8 shadow-md">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            <div>
-                <div class="flex items-center gap-3">
-                    <span class="bg-emerald-500 text-slate-900 text-xs font-bold px-2.5 py-1 rounded-full uppercase">Año 2026</span>
-                    <h1 class="text-2xl font-bold tracking-tight">PROGRAMACIÓN SEMANAL DE VISITAS DE CAMPO</h1>
-                </div>
-                <p class="text-slate-400 text-sm mt-1">Sincronizado en tiempo real. Cualquier cambio se actualiza inmediatamente en el móvil de todo el equipo.</p>
+<!-- BANNER DE ALERTA (MODO DE EMERGENCIA OFFLINE/FALLBACK) -->
+<div id="offline-banner" class="hidden bg-amber-500 text-slate-900 py-2.5 px-4 text-xs font-semibold flex items-center justify-center gap-2 shadow-inner">
+    <i class="fa-solid fa-triangle-exclamation text-sm animate-pulse"></i>
+    <span><strong>Modo de Emergencia Activo:</strong> Sin sincronización en la nube (Funcionando de manera Local). Comprueba tu configuración de Firebase.</span>
+</div>
+
+<!-- CABECERA PRINCIPAL (Estilo Ejecutivo y Limpio) -->
+<header class="bg-slate-900 text-white py-6 px-8 shadow-md border-b border-slate-800">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+            <div class="flex items-center gap-3">
+                <span class="bg-emerald-500 text-slate-900 text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Año 2026</span>
+                <h1 class="text-2xl font-bold tracking-tight">PROGRAMACIÓN SEMANAL DE VISITAS DE CAMPO</h1>
             </div>
-            <div class="flex items-center gap-4">
-                <div class="text-right">
-                    <p class="text-xs text-slate-400 font-semibold tracking-wider uppercase">Sub Gerencia de Liquidación de Obras</p>
-                    <p class="text-sm font-bold text-emerald-400">SGLO - Municipalidad Distrital de San Marcos</p>
-                </div>
-                <div class="h-10 w-10 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-400 border border-emerald-500/20">
-                    <i class="fa-solid fa-map-location-dot text-lg"></i>
-                </div>
+            <p class="text-slate-400 text-sm mt-1">Planificador dinámico de comisiones, sincronizado con base de datos en tiempo real.</p>
+        </div>
+        <!-- Membrete Solicitado -->
+        <div class="flex items-center gap-4">
+            <div class="text-right">
+                <p class="text-xs text-slate-400 font-medium">Sub Gerencia de Liquidación de Obras</p>
+                <p class="text-sm font-semibold text-emerald-400">SGLO - Municipalidad Distrital de San Marcos</p>
+            </div>
+            <div class="h-10 w-10 bg-emerald-500/10 rounded-lg flex items-center justify-center text-emerald-400">
+                <i class="fa-solid fa-map-location-dot text-lg"></i>
             </div>
         </div>
-    </header>
+    </div>
+</header>
 
-    <!-- ÁREA DE CONTROL, FILTROS Y MÉTRICAS -->
-    <section class="max-w-7xl mx-auto w-full px-6 py-6 flex-grow">
-        
-        <!-- BARRA DE CONTROLES PRINCIPALES -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-6">
-            <div class="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
+<!-- CUERPO DE LA APLICACIÓN -->
+<section class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex-grow">
+    
+    <!-- BARRA DE CONTROLES: NAVEGACIÓN Y FILTROS -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-6">
+        <div class="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
+            
+            <!-- Selector de Semana -->
+            <div class="flex items-center gap-3 flex-wrap">
+                <button onclick="window.changeWeek(-1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition flex items-center">
+                    <i class="fa-solid fa-chevron-left mr-1.5 text-xs"></i> Sem. Anterior
+                </button>
                 
-                <div class="flex items-center gap-3 flex-wrap">
-                    <button onclick="changeWeek(-1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition flex items-center">
-                        <i class="fa-solid fa-chevron-left mr-1.5"></i> Sem. Anterior
-                    </button>
-                    <select id="weekSelector" onchange="onWeekSelectChange(this.value)" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 p-2.5 font-medium min-w-[280px]"></select>
-                    <button onclick="changeWeek(1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition flex items-center">
-                        Sem. Siguiente <i class="fa-solid fa-chevron-right ml-1.5"></i>
-                    </button>
-                    <button onclick="goToCurrentWeek()" class="border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition">Semana Actual</button>
-                </div>
+                <select id="weekSelector" onchange="window.onWeekSelectChange(this.value)" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 p-2.5 font-semibold min-w-[280px]">
+                    <!-- Rellenado dinámicamente -->
+                </select>
 
-                <div class="flex items-center gap-3">
-                    <div class="relative w-full sm:w-64">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                        </div>
-                        <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Buscar obra, CUI o encargado..." class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-9 p-2.5">
+                <button onclick="window.changeWeek(1)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition flex items-center">
+                    Sem. Siguiente <i class="fa-solid fa-chevron-right ml-1.5 text-xs"></i>
+                </button>
+
+                <button onclick="window.goToCurrentWeek()" class="border border-slate-300 hover:bg-slate-50 text-slate-700 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition">
+                    Semana Actual
+                </button>
+            </div>
+
+            <!-- Filtro de Búsqueda -->
+            <div class="flex items-center gap-3">
+                <div class="relative w-full sm:w-64">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
                     </div>
+                    <input type="text" id="searchInput" oninput="window.applyFilters()" placeholder="Buscar obra, CUI o encargado..." class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block w-full pl-9 p-2.5">
                 </div>
+                <button onclick="window.clearDatabase()" class="text-rose-600 hover:bg-rose-50 border border-rose-200 px-3.5 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-1.5" title="Restaurar base de datos">
+                    <i class="fa-solid fa-rotate-left"></i> <span class="hidden md:inline">Reset</span>
+                </button>
+            </div>
 
-            </div>
-        </div>
-
-        <!-- INDICADORES CLAVE (KPIS) -->
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-                <div><p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Total Semana</p><p id="kpi-total" class="text-2xl font-bold text-slate-800 mt-1">0</p></div>
-                <div class="bg-slate-100 text-slate-600 p-3 rounded-lg"><i class="fa-solid fa-calendar-week"></i></div>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-                <div><p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Realizados</p><p id="kpi-realizado" class="text-2xl font-bold text-emerald-600 mt-1">0</p></div>
-                <div class="bg-emerald-50 text-emerald-600 p-3 rounded-lg"><i class="fa-solid fa-circle-check"></i></div>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-                <div><p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Suspendidos</p><p id="kpi-suspendido" class="text-2xl font-bold text-rose-600 mt-1">0</p></div>
-                <div class="bg-rose-50 text-rose-600 p-3 rounded-lg"><i class="fa-solid fa-circle-xmark"></i></div>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-                <div><p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Pendientes</p><p id="kpi-pendiente" class="text-2xl font-bold text-sky-600 mt-1">0</p></div>
-                <div class="bg-sky-50 text-sky-600 p-3 rounded-lg"><i class="fa-solid fa-clock"></i></div>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between col-span-2 md:col-span-1">
-                <div><p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Otros</p><p id="kpi-otros" class="text-2xl font-bold text-amber-600 mt-1">0</p></div>
-                <div class="bg-amber-50 text-amber-600 p-3 rounded-lg"><i class="fa-solid fa-triangle-exclamation"></i></div>
-            </div>
-        </div>
-
-        <!-- PLANIFICADOR SEMANAL: GRILLA -->
-        <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 items-stretch">
-            <!-- Columnas del calendario -->
-            <template id="column-template">
-                <div class="bg-slate-100 rounded-2xl border border-slate-200/60 p-4 flex flex-col min-h-[500px]">
-                    <div class="flex items-center justify-between mb-3">
-                        <div>
-                            <h3 class="font-bold text-slate-800 text-base day-title">DÍA</h3>
-                            <p class="text-xs text-slate-500 font-semibold date-label">--/--/--</p>
-                        </div>
-                        <span class="holiday-badge hidden bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Feriado 🏖️</span>
-                    </div>
-                    <div class="holiday-banner hidden mb-3 bg-slate-200/50 border border-slate-300 rounded-lg p-2 text-center">
-                        <p class="text-xs text-slate-600 font-medium holiday-text"></p>
-                    </div>
-                    <div class="flex-grow space-y-3 visits-container"></div>
-                    <button class="add-visit-btn mt-4 w-full bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 font-medium py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-plus text-slate-400"></i> Programar Visita
-                    </button>
-                </div>
-            </template>
-
-            <div id="column-0"></div>
-            <div id="column-1"></div>
-            <div id="column-2"></div>
-            <div id="column-3"></div>
-            <div id="column-4"></div>
-        </div>
-    </section>
-
-    <!-- MODAL PARA AGREGAR/EDITAR VISITA -->
-    <div id="visitModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-xl overflow-hidden card-transition">
-            <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white">
-                <h3 id="modalTitle" class="font-bold text-base">Programar Nueva Visita</h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <form id="visitForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
-                <input type="hidden" id="visitId">
-                <input type="hidden" id="visitDayIndex">
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Fecha</label><input type="date" id="formFecha" required readonly class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg block w-full p-2.5 font-medium cursor-not-allowed"></div>
-                    <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Hora</label><input type="text" id="formHora" placeholder="Ej. 09:30 AM" required class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg block w-full p-2.5"></div>
-                </div>
-                <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Obra / Proyecto</label><textarea id="formObra" rows="3" required class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg block w-full p-2.5 resize-none"></textarea></div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">CUI</label><input type="text" id="formCUI" placeholder="Ej. 2657321" required class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg block w-full p-2.5"></div>
-                    <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Notificación</label><select id="formNotificacion" required class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg block w-full p-2.5"><option value="Notificado">Notificado</option><option value="Con carta">Con carta</option><option value="Por programar">Por programar</option></select></div>
-                </div>
-                <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Encargado</label><select id="formEncargado" required class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg block w-full p-2.5"><option value="Gabriel">Gabriel</option><option value="Luis">Luis</option><option value="Hugo">Hugo</option><option value="Néstor Antequera">Néstor Antequera</option></select></div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Miembros Titulares del Comité</label>
-                    <div class="flex gap-2 mb-2">
-                        <input type="text" id="nuevoIntegranteInput" placeholder="Agregar nuevo nombre..." class="bg-slate-50 border border-slate-300 text-slate-800 text-xs rounded-lg block flex-grow p-2">
-                        <button type="button" onclick="agregarIntegranteLista()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition"><i class="fa-solid fa-user-plus"></i></button>
-                    </div>
-                    <div id="contenedorTitulares" class="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200 max-h-28 overflow-y-auto"></div>
-                </div>
-                <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Estado</label><select id="formEstado" required class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg block w-full p-2.5 font-semibold"><option value="Pendiente">Pendiente</option><option value="Realizado">Realizado</option><option value="Suspendido">Suspendido</option><option value="Otros">Otros</option></select></div>
-                <div class="flex justify-end gap-3 pt-4 border-t border-slate-100"><button type="button" onclick="closeModal()" class="border border-slate-300 px-4 py-2 rounded-xl text-sm transition">Cancelar</button><button type="submit" class="bg-slate-900 text-white px-5 py-2 rounded-xl text-sm transition">Guardar</button></div>
-            </form>
         </div>
     </div>
 
-    <!-- SCRIPTS CONEXIÓN FIREBASE -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    <!-- INDICADORES CLAVE SEMANALES (Métricas Rápidas) -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div>
+                <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Total Semana</p>
+                <p id="kpi-total" class="text-2xl font-bold text-slate-800 mt-1">0</p>
+            </div>
+            <div class="bg-slate-100 text-slate-600 p-3 rounded-lg"><i class="fa-solid fa-calendar-week"></i></div>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div>
+                <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Realizados</p>
+                <p id="kpi-realizado" class="text-2xl font-bold text-emerald-600 mt-1">0</p>
+            </div>
+            <div class="bg-emerald-50 text-emerald-600 p-3 rounded-lg"><i class="fa-solid fa-circle-check"></i></div>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div>
+                <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Suspendidos</p>
+                <p id="kpi-suspendido" class="text-2xl font-bold text-rose-600 mt-1">0</p>
+            </div>
+            <div class="bg-rose-50 text-rose-600 p-3 rounded-lg"><i class="fa-solid fa-circle-xmark"></i></div>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+            <div>
+                <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Pendientes</p>
+                <p id="kpi-pendiente" class="text-2xl font-bold text-sky-600 mt-1">0</p>
+            </div>
+            <div class="bg-sky-50 text-sky-600 p-3 rounded-lg"><i class="fa-solid fa-clock"></i></div>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between col-span-2 md:col-span-1">
+            <div>
+                <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Otros</p>
+                <p id="kpi-otros" class="text-2xl font-bold text-amber-600 mt-1">0</p>
+            </div>
+            <div class="bg-amber-50 text-amber-600 p-3 rounded-lg"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        </div>
+    </div>
 
-        // ==========================================
-       // Import the functions you need from the SDKs you need
-            import { initializeApp } from "firebase/app";
-            import { getAnalytics } from "firebase/analytics";
-            // TODO: Add SDKs for Firebase products that you want to use
-            // https://firebase.google.com/docs/web/setup#available-libraries
-            
-            // Your web app's Firebase configuration
-            // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-            const firebaseConfig = {
-              apiKey: "AIzaSyD_TkF7LCe2twnpbj2vSoPy6KEsvHqYPvE",
-              authDomain: "visitas-sglo-sanmarcos.firebaseapp.com",
-              databaseURL: "https://visitas-sglo-sanmarcos-default-rtdb.firebaseio.com",
-              projectId: "visitas-sglo-sanmarcos",
-              storageBucket: "visitas-sglo-sanmarcos.firebasestorage.app",
-              messagingSenderId: "272120103556",
-              appId: "1:272120103556:web:d8a58118dbd47a6ec378d1",
-              measurementId: "G-J35FQNR2W8"
-            };
-            
-            // Initialize Firebase
-            const app = initializeApp(firebaseConfig);
-            const analytics = getAnalytics(app);
-        // ==========================================
-        const firebaseConfig = {
-          apiKey: "AIzaSyA...",
-          authDomain: "visitas-sglo-sanmarcos.firebaseapp.com",
-          databaseURL: "https://visitas-sglo-sanmarcos-default-rtdb.firebaseio.com",
-          projectId: "visitas-sglo-sanmarcos",
-          storageBucket: "visitas-sglo-sanmarcos.appspot.com",
-          messagingSenderId: "...",
-          appId: "..."
-        };
+    <!-- PLANIFICADOR SEMANAL: GRILLA DE LUNES A VIERNES -->
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 items-stretch">
+        
+        <!-- LUNES -->
+        <div class="bg-slate-100 rounded-2xl border border-slate-200/60 p-4 flex flex-col min-h-[500px]" id="column-0">
+            <div class="flex items-center justify-between mb-3">
+                <div>
+                    <h3 class="font-bold text-slate-800 text-base">LUNES</h3>
+                    <p class="text-xs text-slate-500 font-semibold" id="date-label-0">--/--/--</p>
+                </div>
+                <span id="holiday-badge-0" class="hidden bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Feriado 🏖️</span>
+            </div>
+            <div id="holiday-banner-0" class="hidden mb-3 bg-slate-200/50 border border-slate-300 rounded-lg p-2 text-center">
+                <p class="text-xs text-slate-600 font-medium" id="holiday-text-0"></p>
+            </div>
+            <div class="flex-grow space-y-3" id="visits-container-0"></div>
+            <button onclick="window.openAddModal(0)" class="mt-4 w-full bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 font-semibold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-plus text-slate-400"></i> Programar Visita
+            </button>
+        </div>
 
-        // Inicializar Firebase
+        <!-- MARTES -->
+        <div class="bg-slate-100 rounded-2xl border border-slate-200/60 p-4 flex flex-col min-h-[500px]" id="column-1">
+            <div class="flex items-center justify-between mb-3">
+                <div>
+                    <h3 class="font-bold text-slate-800 text-base">MARTES</h3>
+                    <p class="text-xs text-slate-500 font-semibold" id="date-label-1">--/--/--</p>
+                </div>
+                <span id="holiday-badge-1" class="hidden bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Feriado 🏖️</span>
+            </div>
+            <div id="holiday-banner-1" class="hidden mb-3 bg-slate-200/50 border border-slate-300 rounded-lg p-2 text-center">
+                <p class="text-xs text-slate-600 font-medium" id="holiday-text-1"></p>
+            </div>
+            <div class="flex-grow space-y-3" id="visits-container-1"></div>
+            <button onclick="window.openAddModal(1)" class="mt-4 w-full bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 font-semibold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-plus text-slate-400"></i> Programar Visita
+            </button>
+        </div>
+
+        <!-- MIÉRCOLES -->
+        <div class="bg-slate-100 rounded-2xl border border-slate-200/60 p-4 flex flex-col min-h-[500px]" id="column-2">
+            <div class="flex items-center justify-between mb-3">
+                <div>
+                    <h3 class="font-bold text-slate-800 text-base">MIÉRCOLES</h3>
+                    <p class="text-xs text-slate-500 font-semibold" id="date-label-2">--/--/--</p>
+                </div>
+                <span id="holiday-badge-2" class="hidden bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Feriado 🏖️</span>
+            </div>
+            <div id="holiday-banner-2" class="hidden mb-3 bg-slate-200/50 border border-slate-300 rounded-lg p-2 text-center">
+                <p class="text-xs text-slate-600 font-medium" id="holiday-text-2"></p>
+            </div>
+            <div class="flex-grow space-y-3" id="visits-container-2"></div>
+            <button onclick="window.openAddModal(2)" class="mt-4 w-full bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 font-semibold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-plus text-slate-400"></i> Programar Visita
+            </button>
+        </div>
+
+        <!-- JUEVES -->
+        <div class="bg-slate-100 rounded-2xl border border-slate-200/60 p-4 flex flex-col min-h-[500px]" id="column-3">
+            <div class="flex items-center justify-between mb-3">
+                <div>
+                    <h3 class="font-bold text-slate-800 text-base">JUEVES</h3>
+                    <p class="text-xs text-slate-500 font-semibold" id="date-label-3">--/--/--</p>
+                </div>
+                <span id="holiday-badge-3" class="hidden bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Feriado 🏖️</span>
+            </div>
+            <div id="holiday-banner-3" class="hidden mb-3 bg-slate-200/50 border border-slate-300 rounded-lg p-2 text-center">
+                <p class="text-xs text-slate-600 font-medium" id="holiday-text-3"></p>
+            </div>
+            <div class="flex-grow space-y-3" id="visits-container-3"></div>
+            <button onclick="window.openAddModal(3)" class="mt-4 w-full bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 font-semibold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-plus text-slate-400"></i> Programar Visita
+            </button>
+        </div>
+
+        <!-- VIERNES -->
+        <div class="bg-slate-100 rounded-2xl border border-slate-200/60 p-4 flex flex-col min-h-[500px]" id="column-4">
+            <div class="flex items-center justify-between mb-3">
+                <div>
+                    <h3 class="font-bold text-slate-800 text-base">VIERNES</h3>
+                    <p class="text-xs text-slate-500 font-semibold" id="date-label-4">--/--/--</p>
+                </div>
+                <span id="holiday-badge-4" class="hidden bg-slate-200 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Feriado 🏖️</span>
+            </div>
+            <div id="holiday-banner-4" class="hidden mb-3 bg-slate-200/50 border border-slate-300 rounded-lg p-2 text-center">
+                <p class="text-xs text-slate-600 font-medium" id="holiday-text-4"></p>
+            </div>
+            <div class="flex-grow space-y-3" id="visits-container-4"></div>
+            <button onclick="window.openAddModal(4)" class="mt-4 w-full bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 text-slate-700 font-semibold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-plus text-slate-400"></i> Programar Visita
+            </button>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- PIE DE PÁGINA -->
+<footer class="bg-slate-900 text-slate-400 text-xs text-center py-4 border-t border-slate-800">
+    <p>© 2026 Planificador Ejecutivo SGLO. Sub Gerencia de Liquidación de Obras - San Marcos.</p>
+</footer>
+
+<!-- MODAL DE OPERACIONES (CREAR / EDITAR) -->
+<div id="visitModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 animate-fade-in">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-xl overflow-hidden card-transition">
+        <!-- Cabecera -->
+        <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white">
+            <h3 id="modalTitle" class="font-bold text-base">Programar Visita</h3>
+            <button onclick="window.closeModal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        <!-- Formulario -->
+        <form id="visitForm" onsubmit="window.handleFormSubmit(event)" class="p-6 space-y-4">
+            <input type="hidden" id="visitId">
+            <input type="hidden" id="visitDayIndex">
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Fecha de Visita</label>
+                    <input type="date" id="formFecha" required readonly class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-xl block w-full p-2.5 font-medium cursor-not-allowed">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Hora Programada</label>
+                    <input type="text" id="formHora" placeholder="Ej. 09:30 AM" required class="bg-slate-100 border border-slate-300 text-slate-800 text-sm rounded-xl block w-full p-2.5 focus:ring-2 focus:ring-emerald-500">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Nombre de la Obra / Proyecto</label>
+                <textarea id="formObra" rows="3" placeholder="Ingresar descripción detallada de la obra..." required class="bg-slate-100 border border-slate-300 text-slate-800 text-sm rounded-xl block w-full p-2.5 resize-none focus:ring-2 focus:ring-emerald-500"></textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Código Único (CUI)</label>
+                    <input type="text" id="formCUI" placeholder="Ej. 2657321" required class="bg-slate-100 border border-slate-300 text-slate-800 text-sm rounded-xl block w-full p-2.5 focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Notificación / Carta</label>
+                    <select id="formNotificacion" required class="bg-slate-100 border border-slate-300 text-slate-850 text-sm rounded-xl block w-full p-2.5 focus:ring-2 focus:ring-emerald-500">
+                        <option value="Notificado">Notificado</option>
+                        <option value="Con carta">Con carta</option>
+                        <option value="Por programar">Por programar</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Encargado de la Visita (Recepción)</label>
+                <select id="formEncargado" required class="bg-slate-100 border border-slate-300 text-slate-850 text-sm rounded-xl block w-full p-2.5 focus:ring-2 focus:ring-emerald-500">
+                    <option value="Gabriel">Gabriel</option>
+                    <option value="Luis">Luis</option>
+                    <option value="Hugo">Hugo</option>
+                    <option value="Néstor Antequera">Néstor Antequera</option>
+                </select>
+            </div>
+
+            <!-- Sección de Integrantes del Comité Dinámica -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Miembros Titulares del Comité</label>
+                <div class="flex gap-2 mb-2">
+                    <input type="text" id="nuevoIntegranteInput" placeholder="Añadir nuevo miembro al comité..." class="bg-slate-100 border border-slate-300 text-slate-800 text-xs rounded-xl block flex-grow p-2.5 focus:ring-2 focus:ring-emerald-500">
+                    <button type="button" onclick="window.agregarIntegranteLista()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-user-plus"></i> Añadir
+                    </button>
+                </div>
+                <div id="contenedorTitulares" class="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200 max-h-28 overflow-y-auto">
+                    <!-- Casillas generadas mediante JS -->
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Estado de la Visita</label>
+                <select id="formEstado" required class="bg-slate-100 border border-slate-300 text-slate-850 text-sm rounded-xl block w-full p-2.5 font-bold focus:ring-2 focus:ring-emerald-500">
+                    <option value="Pendiente" class="text-sky-600">Pendiente</option>
+                    <option value="Realizado" class="text-emerald-600">Realizado</option>
+                    <option value="Suspendido" class="text-rose-600">Suspendido</option>
+                    <option value="Otros" class="text-amber-600">Otros</option>
+                </select>
+            </div>
+
+            <!-- Botones Finales -->
+            <div class="flex justify-end gap-3 pt-4 border-t border-slate-150">
+                <button type="button" onclick="window.closeModal()" class="border border-slate-300 hover:bg-slate-100 text-slate-700 px-4 py-2 rounded-xl text-sm font-semibold transition">Cancelar</button>
+                <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 rounded-xl text-sm font-semibold transition">Guardar Registro</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MÓDULO LOGICO PRINCIPAL CON CONEXIÓN FIREBASE EN TIEMPO REAL -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // ==========================================
+   // Import the functions you need from the SDKs you need
+    import { initializeApp } from "firebase/app";
+    import { getAnalytics } from "firebase/analytics";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+    
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyD_TkF7LCe2twnpbj2vSoPy6KEsvHqYPvE",
+      authDomain: "visitas-sglo-sanmarcos.firebaseapp.com",
+      databaseURL: "https://visitas-sglo-sanmarcos-default-rtdb.firebaseio.com",
+      projectId: "visitas-sglo-sanmarcos",
+      storageBucket: "visitas-sglo-sanmarcos.firebasestorage.app",
+      messagingSenderId: "272120103556",
+      appId: "1:272120103556:web:d8a58118dbd47a6ec378d1",
+      measurementId: "G-J35FQNR2W8"
+    };
+    
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    // ==========================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyA...",
+      authDomain: "tu-proyecto.firebaseapp.com",
+      databaseURL: "https://tu-proyecto.firebaseio.com",
+      projectId: "tu-proyecto",
+      storageBucket: "tu-proyecto.appspot.com",
+      messagingSenderId: "...",
+      appId: "..."
+    };
+
+    // Variables de Control
+    let db = null;
+    let isOfflineMode = false;
+    let visits = {};
+    let weeksOf2026 = [];
+    let currentWeekIndex = 25; // Index para semana del 22 al 26 de Junio de 2026
+    let listaIntegrantesDisponibles = ["Miguel Giron", "Segundo Giraldo", "Nestor Antequera"];
+
+    const FERIADOS_2026 = {
+        "2026-01-01": "Año Nuevo 🎆", "2026-04-02": "Jueves Santo ⛪", "2026-04-03": "Viernes Santo ⛪",
+        "2026-05-01": "Día del Trabajo 👷", "2026-06-07": "Batalla de Arica 🇵🇪", "2026-06-29": "San Pedro y San Pablo ⛵",
+        "2026-07-23": "Día de la Fuerza Aérea ✈️", "2026-07-28": "Fiestas Patrias 🇵🇪", "2026-07-29": "Fiestas Patrias 🇵🇪",
+        "2026-08-06": "Batalla de Junín 🐎", "2026-08-30": "Santa Rosa de Lima 🌹", "2026-10-08": "Combate de Angamos ⚓",
+        "2026-11-01": "Día de Todos los Santos 🕊️", "2026-12-08": "Inmaculada Concepción ⛪", "2026-12-09": "Batalla de Ayacucho ⚔️",
+        "2026-12-25": "Navidad 🎄"
+    };
+
+    const INITIAL_DEMO_DATA = {
+        "demo_1": {
+            fecha: "2026-06-23",
+            obra: "CONSTRUCCION DE CUNETA, GUARDAVIAS Y BARANDA; EN EL(LA) SERVICIO DE TRANSITABILIDAD VIAL INTERURBANA EN EL CASERIO DE RANRACUTA DEL CENTRO POBLADO SANTA CRUZ DE MOSNA DISTRITO DE SAN MARCOS, PROVINCIA HUARI, DEPARTAMENTO ANCASH",
+            cui: "2624139", hora: "09:30 AM", notificacion: "Notificado", encargado: "Gabriel",
+            titulares: ["Miguel Giron", "Segundo Giraldo", "Nestor Antequera"], estado: "Realizado"
+        },
+        "demo_2": {
+            fecha: "2026-06-24",
+            obra: "MEJORAMIENTO DEL SERVICIO DE MOVILIDAD URBANA EN LAS CALLES CHIPTA PAMPA - OGURAJGRA - LAS FLORES - USHNUPATAC EN EL CASERIO DE CHIPTA DEL CENTRO POBLADO SAN PEDRO DE CARASH DISTRITO DE SAN MARCOS DE LA PROVINCIA DE HUARI DEL DEPARTAMENTO DE ANCASH",
+            cui: "2631663", hora: "10:00 AM", notificacion: "Notificado", encargado: "Luis",
+            titulares: ["Miguel Giron", "Segundo Giraldo"], estado: "Otros"
+        }
+    };
+
+    // Inicialización Inteligente con Fallback a LocalStorage
+    try {
+        if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes("AIzaSyA...")) {
+            throw new Error("Credenciales de ejemplo detectadas.");
+        }
         const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const visitasRef = ref(db, 'visitas');
+        db = getDatabase(app);
+        
+        // Suscribirse a Firebase
+        onValue(ref(db, 'visitas'), (snapshot) => {
+            const data = snapshot.val();
+            visits = data ? data : {};
+            renderCurrentWeek();
+        }, (error) => {
+            console.error("Error al leer Firebase:", error);
+            activarModoEmergencia();
+        });
+    } catch (e) {
+        console.warn("Iniciando en Modo Local:", e.message);
+        activarModoEmergencia();
+    }
 
-        // Variables Globales
-        let visits = {};
-        let weeksOf2026 = [];
-        let currentWeekIndex = 25; // Semana default: 22 de Junio
-        let listaIntegrantesDisponibles = ["Miguel Giron", "Segundo Giraldo", "Nestor Antequera"];
+    function activarModoEmergencia() {
+        isOfflineMode = true;
+        document.getElementById("offline-banner").classList.remove("hidden");
+        
+        // Cargar datos de LocalStorage
+        const localData = localStorage.getItem("sglo_visitas_locales");
+        if (localData) {
+            visits = JSON.parse(localData);
+        } else {
+            visits = {...INITIAL_DEMO_DATA};
+            localStorage.setItem("sglo_visitas_locales", JSON.stringify(visits));
+        }
+        setTimeout(() => { renderCurrentWeek(); }, 100);
+    }
 
-        const FERIADOS_2026 = {
-            "2026-01-01": "Año Nuevo 🎆", "2026-04-02": "Jueves Santo ⛪", "2026-04-03": "Viernes Santo ⛪",
-            "2026-05-01": "Día del Trabajo 👷", "2026-06-07": "Batalla de Arica 🇵🇪", "2026-06-29": "San Pedro y San Pablo ⛵",
-            "2026-07-23": "Día de la Fuerza Aérea ✈️", "2026-07-28": "Fiestas Patrias 🇵🇪", "2026-07-29": "Fiestas Patrias 🇵🇪",
-            "2026-08-06": "Batalla de Junín 🐎", "2026-08-30": "Santa Rosa de Lima 🌹", "2026-10-08": "Combate de Angamos ⚓",
-            "2026-11-01": "Día de Todos los Santos 🕊️", "2026-12-08": "Inmaculada Concepción ⛪", "2026-12-09": "Batalla de Ayacucho ⚔️",
-            "2026-12-25": "Navidad 🎄"
+    // Generador de Semanas Calendario
+    function generateWeeksOf2026() {
+        weeksOf2026 = [];
+        // Empezar en el lunes 5 de enero de 2026
+        let date = new Date(2026, 0, 5, 0, 0, 0, 0);
+        while (date.getFullYear() === 2026) {
+            weeksOf2026.push(new Date(date));
+            date.setDate(date.getDate() + 7);
+        }
+    }
+
+    function populateWeekSelector() {
+        const selector = document.getElementById("weekSelector");
+        selector.innerHTML = "";
+        weeksOf2026.forEach((monday, index) => {
+            const friday = new Date(monday);
+            friday.setDate(monday.getDate() + 4);
+            const start = `${String(monday.getDate()).padStart(2,'0')}/${String(monday.getMonth()+1).padStart(2,'0')}`;
+            const end = `${String(friday.getDate()).padStart(2,'0')}/${String(friday.getMonth()+1).padStart(2,'0')}`;
+            const option = document.createElement("option");
+            option.value = index;
+            option.textContent = `Semana ${index + 1}: ${start} al ${end}`;
+            selector.appendChild(option);
+        });
+    }
+
+    // Funciones de Navegación
+    window.changeWeek = function(direction) {
+        let nextIndex = currentWeekIndex + direction;
+        if (nextIndex >= 0 && nextIndex < weeksOf2026.length) { goToWeek(nextIndex); }
+    }
+
+    window.onWeekSelectChange = function(index) {
+        goToWeek(parseInt(index));
+    }
+
+    function goToWeek(index) {
+        currentWeekIndex = index;
+        document.getElementById("weekSelector").value = index;
+        renderCurrentWeek();
+    }
+
+    window.goToCurrentWeek = function() {
+        const today = new Date();
+        let compDate = today.getFullYear() === 2026 ? today : new Date(2026, 5, 24); // Simulación Junio 2026 si estamos fuera del año
+        const day = compDate.getDay();
+        const diff = compDate.getDate() - day + (day === 0 ? -6 : 1);
+        const targetMonday = new Date(compDate.setDate(diff));
+        targetMonday.setHours(0,0,0,0);
+
+        let closestIndex = 0;
+        let minDiff = Infinity;
+        weeksOf2026.forEach((monday, idx) => {
+            let diffTime = Math.abs(monday - targetMonday);
+            if (diffTime < minDiff) { minDiff = diffTime; closestIndex = idx; }
+        });
+        goToWeek(closestIndex);
+    }
+
+    function getWeekDaysDates(monday) {
+        let dates = [];
+        for (let i = 0; i < 5; i++) {
+            let dayDate = new Date(monday);
+            dayDate.setDate(monday.getDate() + i);
+            const y = dayDate.getFullYear();
+            const m = String(dayDate.getMonth() + 1).padStart(2, '0');
+            const d = String(dayDate.getDate()).padStart(2, '0');
+            dates.push(`${y}-${m}-${d}`);
+        }
+        return dates;
+    }
+
+    // Motor de Renderizado
+    function renderCurrentWeek() {
+        const monday = weeksOf2026[currentWeekIndex];
+        if (!monday) return;
+        const weekDates = getWeekDaysDates(monday);
+        const searchQuery = document.getElementById("searchInput").value.toLowerCase().trim();
+        let kpis = { total: 0, realizado: 0, suspendido: 0, pendiente: 0, otros: 0 };
+
+        // Convertir objeto de visitas indexadas a lista plana
+        const visitsArray = Object.keys(visits).map(key => ({ id: key, ...visits[key] }));
+
+        for (let d = 0; d < 5; d++) {
+            const currentDateStr = weekDates[d];
+            // Formatear etiqueta de cabecera (DD/MM/AAAA)
+            document.getElementById(`date-label-${d}`).textContent = `${currentDateStr.split("-")[2]}/${currentDateStr.split("-")[1]}/${currentDateStr.split("-")[0]}`;
+
+            // Controlar Feriados
+            const holidayName = FERIADOS_2026[currentDateStr];
+            const badge = document.getElementById(`holiday-badge-${d}`);
+            const banner = document.getElementById(`holiday-banner-${d}`);
+            const txt = document.getElementById(`holiday-text-${d}`);
+            const col = document.getElementById(`column-${d}`);
+
+            if (holidayName) {
+                badge.classList.remove("hidden"); banner.classList.remove("hidden");
+                txt.textContent = holidayName; col.classList.add("bg-slate-200/80");
+            } else {
+                badge.classList.add("hidden"); banner.classList.add("hidden"); col.classList.remove("bg-slate-200/80");
+            }
+
+            // Filtrar por término de búsqueda
+            const dayVisits = visitsArray.filter(v => v.fecha === currentDateStr && (
+                searchQuery === "" || v.obra.toLowerCase().includes(searchQuery) || v.cui.includes(searchQuery) || v.encargado.toLowerCase().includes(searchQuery)
+            ));
+
+            const container = document.getElementById(`visits-container-${d}`);
+            container.innerHTML = "";
+
+            if (dayVisits.length === 0) {
+                container.innerHTML = `<div class="h-24 border-2 border-dashed border-slate-300 rounded-xl flex items-center justify-center text-slate-400 text-xs">Sin visitas asignadas</div>`;
+            } else {
+                dayVisits.forEach(v => {
+                    kpis.total++;
+                    kpis[v.estado.toLowerCase()]++;
+
+                    let styles = { border: "border-l-sky-500 border-sky-200", bg: "bg-sky-50", text: "text-sky-800" };
+                    if (v.estado === "Realizado") styles = { border: "border-l-emerald-500 border-emerald-200", bg: "bg-emerald-50", text: "text-emerald-800" };
+                    if (v.estado === "Suspendido") styles = { border: "border-l-rose-500 border-rose-200", bg: "bg-rose-50", text: "text-rose-800" };
+                    if (v.estado === "Otros") styles = { border: "border-l-amber-500 border-amber-200", bg: "bg-amber-50", text: "text-amber-800" };
+
+                    const cardHtml = `
+                        <div class="bg-white rounded-xl border-l-4 ${styles.border} shadow-xs p-3.5 card-transition relative group hover:shadow-md hover:-translate-y-0.5">
+                            <div class="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="window.editVisit('${v.id}', ${d})" class="text-slate-400 hover:text-slate-700 p-1"><i class="fa-solid fa-pen text-xs"></i></button>
+                                <button onclick="window.deleteVisit('${v.id}')" class="text-slate-400 hover:text-rose-600 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
+                            </div>
+                            <div class="text-[10px] text-slate-400 font-semibold mb-1.5 flex items-center gap-1.5">
+                                <i class="fa-solid fa-clock"></i> <span>${v.hora}</span> <span class="mx-0.5">•</span>
+                                <span class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 uppercase font-bold text-[9px]">${v.notificacion}</span>
+                            </div>
+                            <p class="text-xs text-slate-800 font-semibold mb-2 pr-6 leading-tight">${v.obra}</p>
+                            <div class="text-[10px] text-slate-500 font-mono mb-2 bg-slate-50 py-0.5 px-2 inline-block rounded border border-slate-100">CUI: ${v.cui}</div>
+                            <div class="text-xs text-slate-600 mb-2 font-medium">👤 Encargado: <strong>${v.encargado}</strong></div>
+                            <div class="text-[10px] bg-slate-50 p-2 rounded-lg border border-slate-100 mb-2">
+                                <p class="font-bold text-slate-500 mb-1 uppercase tracking-wider text-[8px]">Comité:</p>
+                                <div class="flex flex-wrap gap-1">${v.titulares.map(t => `<span class="bg-white border px-1 rounded text-slate-600">${t}</span>`).join('')}</div>
+                            </div>
+                            <select onchange="window.updateVisitStatus('${v.id}', this.value)" class="text-xs font-bold py-1 px-2.5 rounded-full border ${styles.bg} ${styles.text} w-full cursor-pointer focus:outline-none">
+                                <option value="Pendiente" ${v.estado === "Pendiente" ? "selected" : ""}>Pendiente</option>
+                                <option value="Realizado" ${v.estado === "Realizado" ? "selected" : ""}>Realizado</option>
+                                <option value="Suspendido" ${v.estado === "Suspendido" ? "selected" : ""}>Suspendido</option>
+                                <option value="Otros" ${v.estado === "Otros" ? "selected" : ""}>Otros</option>
+                            </select>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', cardHtml);
+                });
+            }
+        }
+
+        // Actualizar Tarjetas KPI
+        document.getElementById("kpi-total").textContent = kpis.total;
+        document.getElementById("kpi-realizado").textContent = kpis.realizado;
+        document.getElementById("kpi-suspendido").textContent = kpis.suspendido;
+        document.getElementById("kpi-pendiente").textContent = kpis.pendiente;
+        document.getElementById("kpi-otros").textContent = kpis.otros;
+    }
+
+    window.applyFilters = function() { renderCurrentWeek(); }
+
+    // Gestión Dinámica de Titulares en Modal
+    window.renderCheckboxesTitulares = function(seleccionados = []) {
+        const contenedor = document.getElementById("contenedorTitulares");
+        contenedor.innerHTML = "";
+        listaIntegrantesDisponibles.forEach(integrante => {
+            const estaChecked = seleccionados.includes(integrante) ? "checked" : "";
+            contenedor.insertAdjacentHTML('beforeend', `
+                <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer p-1">
+                    <input type="checkbox" name="titulares" value="${integrante}" ${estaChecked} class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"> 
+                    <span class="truncate">${integrante}</span>
+                </label>
+            `);
+        });
+    }
+
+    window.agregarIntegranteLista = function() {
+        const input = document.getElementById("nuevoIntegranteInput");
+        const nombre = input.value.trim();
+        if (nombre === "") return;
+        if (!listaIntegrantesDisponibles.includes(nombre)) { listaIntegrantesDisponibles.push(nombre); }
+
+        const checkboxes = document.getElementsByName("titulares");
+        const actualmenteSeleccionados = [];
+        checkboxes.forEach(cb => { if (cb.checked) actualmenteSeleccionados.push(cb.value); });
+        if (!actualmenteSeleccionados.includes(nombre)) actualmenteSeleccionados.push(nombre);
+
+        renderCheckboxesTitulares(actualmenteSeleccionados);
+        input.value = ""; input.focus();
+    }
+
+    // Operaciones del Modal
+    window.openAddModal = function(dayIndex) {
+        document.getElementById("visitForm").reset();
+        document.getElementById("visitId").value = "";
+        document.getElementById("visitDayIndex").value = dayIndex;
+        document.getElementById("modalTitle").textContent = "Programar Nueva Visita";
+        
+        const dates = getWeekDaysDates(weeksOf2026[currentWeekIndex]);
+        document.getElementById("formFecha").value = dates[dayIndex];
+
+        renderCheckboxesTitulares(listaIntegrantesDisponibles);
+        document.getElementById("visitModal").classList.remove("hidden");
+    }
+
+    window.editVisit = function(id, dayIndex) {
+        const v = visits[id];
+        if (!v) return;
+
+        document.getElementById("visitId").value = id;
+        document.getElementById("visitDayIndex").value = dayIndex;
+        document.getElementById("modalTitle").textContent = "Modificar Visita";
+
+        document.getElementById("formFecha").value = v.fecha;
+        document.getElementById("formHora").value = v.hora;
+        document.getElementById("formObra").value = v.obra;
+        document.getElementById("formCUI").value = v.cui;
+        document.getElementById("formNotificacion").value = v.notificacion;
+        document.getElementById("formEncargado").value = v.encargado;
+        document.getElementById("formEstado").value = v.estado;
+
+        v.titulares.forEach(t => { if (!listaIntegrantesDisponibles.includes(t)) { listaIntegrantesDisponibles.push(t); } });
+        renderCheckboxesTitulares(v.titulares);
+
+        document.getElementById("visitModal").classList.remove("hidden");
+    }
+
+    window.closeModal = function() {
+        document.getElementById("visitModal").classList.add("hidden");
+    }
+
+    window.handleFormSubmit = function(event) {
+        event.preventDefault();
+        const id = document.getElementById("visitId").value;
+        const data = {
+            fecha: document.getElementById("formFecha").value,
+            hora: document.getElementById("formHora").value,
+            obra: document.getElementById("formObra").value,
+            cui: document.getElementById("formCUI").value,
+            notificacion: document.getElementById("formNotificacion").value,
+            encargado: document.getElementById("formEncargado").value,
+            estado: document.getElementById("formEstado").value,
+            titulares: Array.from(document.getElementsByName("titulares")).filter(cb => cb.checked).map(cb => cb.value)
         };
 
-        // EVENT LISTENER DE INICIALIZACIÓN COMPLETA
-        window.addEventListener('DOMContentLoaded', () => {
-            initColumns();
-            generateWeeksOf2026();
-            populateWeekSelector();
-            goToCurrentWeek();
-            
-            // Escuchar cambios de la base de datos en vivo
-            onValue(visitasRef, (snapshot) => {
-                const data = snapshot.val();
-                visits = data ? data : {};
-                renderCurrentWeek();
-            });
-        });
+        if (data.titulares.length === 0) { alert("Debe seleccionar al menos un miembro del comité."); return; }
 
-        // Inyecta dinámicamente las columnas de los 5 días hábiles
-        function initColumns() {
-            const days = ["LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES"];
-            const template = document.getElementById("column-template");
-            days.forEach((day, index) => {
-                const clone = template.content.cloneNode(true);
-                clone.querySelector('.day-title').textContent = day;
-                
-                // Configurar IDs dinámicos únicos
-                clone.querySelector('.holiday-badge').id = `holiday-badge-${index}`;
-                clone.querySelector('.holiday-banner').id = `holiday-banner-${index}`;
-                clone.querySelector('.holiday-text').id = `holiday-text-${index}`;
-                clone.querySelector('.visits-container').id = `visits-container-${index}`;
-                clone.querySelector('.add-visit-btn').setAttribute('onclick', `openAddModal(${index})`);
-                
-                const wrapper = clone.querySelector('div');
-                wrapper.id = `column-wrapper-${index}`;
+        const targetId = id ? id : 'visita_' + Date.now();
 
-                const dateLabel = clone.querySelector('.date-label');
-                if (dateLabel) { dateLabel.id = `date-label-${index}`; }
-
-                document.getElementById(`column-${index}`).appendChild(clone);
-            });
-        }
-
-        // Generar Calendario 2026
-        function generateWeeksOf2026() {
-            weeksOf2026 = [];
-            let date = new Date("2026-01-05T00:00:00");
-            while (date.getFullYear() === 2026) { 
-                weeksOf2026.push(new Date(date)); 
-                date.setDate(date.getDate() + 7); 
-            }
-        }
-
-        function populateWeekSelector() {
-            const selector = document.getElementById("weekSelector");
-            selector.innerHTML = "";
-            weeksOf2026.forEach((monday, index) => {
-                const friday = new Date(monday); friday.setDate(monday.getDate() + 4);
-                const rangeStr = `${monday.toLocaleDateString('es-PE', {day:'numeric', month:'2-digit'})} al ${friday.toLocaleDateString('es-PE', {day:'numeric', month:'2-digit'})}`;
-                const option = document.createElement("option");
-                option.value = index; option.textContent = `Semana ${index + 1}: ${rangeStr}`;
-                selector.appendChild(option);
-            });
-        }
-
-        function changeWeek(direction) {
-            let nextIndex = currentWeekIndex + direction;
-            if (nextIndex >= 0 && nextIndex < weeksOf2026.length) { goToWeek(nextIndex); }
-        }
-        
-        function onWeekSelectChange(index) { goToWeek(parseInt(index)); }
-        
-        function goToWeek(index) { currentWeekIndex = index; document.getElementById("weekSelector").value = index; renderCurrentWeek(); }
-
-        function goToCurrentWeek() {
-            const today = new Date();
-            let compDate = today.getFullYear() === 2026 ? today : new Date("2026-06-24T00:00:00");
-            const day = compDate.getDay();
-            const diff = compDate.getDate() - day + (day === 0 ? -6 : 1);
-            const targetMonday = new Date(compDate.setDate(diff)); targetMonday.setHours(0,0,0,0);
-            let closestIndex = 0; let minDiff = Infinity;
-            weeksOf2026.forEach((monday, idx) => {
-                let diffTime = Math.abs(monday - targetMonday); if (diffTime < minDiff) { minDiff = diffTime; closestIndex = idx; }
-            });
-            goToWeek(closestIndex);
-        }
-
-        function getWeekDaysDates(monday) {
-            let dates = [];
-            for (let i = 0; i < 5; i++) {
-                let dayDate = new Date(monday); dayDate.setDate(monday.getDate() + i);
-                dates.push(`${dayDate.getFullYear()}-${String(dayDate.getMonth() + 1).padStart(2, '0')}-${String(dayDate.getDate()).padStart(2, '0')}`);
-            }
-            return dates;
-        }
-
-        function renderCurrentWeek() {
-            const monday = weeksOf2026[currentWeekIndex]; if(!monday) return;
-            const weekDates = getWeekDaysDates(monday);
-            const searchQuery = document.getElementById("searchInput").value.toLowerCase().trim();
-            let kpis = { total: 0, realizado: 0, suspendido: 0, pendiente: 0, otros: 0 };
-
-            const visitsArray = Object.keys(visits).map(key => ({ id: key, ...visits[key] }));
-
-            for (let d = 0; d < 5; d++) {
-                const currentDateStr = weekDates[d];
-                
-                const dateLabelElement = document.getElementById(`date-label-${d}`);
-                if (dateLabelElement) {
-                    dateLabelElement.textContent = `${currentDateStr.split("-")[2]}/${currentDateStr.split("-")[1]}/${currentDateStr.split("-")[0]}`;
-                }
-                
-                const holidayName = FERIADOS_2026[currentDateStr];
-                const badge = document.getElementById(`holiday-badge-${d}`);
-                const banner = document.getElementById(`holiday-banner-${d}`);
-                const txt = document.getElementById(`holiday-text-${d}`);
-                const colWrapper = document.getElementById(`column-wrapper-${d}`);
-
-                if (holidayName) { 
-                    if(badge) badge.classList.remove("hidden"); 
-                    if(banner) banner.classList.remove("hidden"); 
-                    if(txt) txt.textContent = holidayName; 
-                    if(colWrapper) colWrapper.classList.add("bg-slate-200/80"); 
-                } else { 
-                    if(badge) badge.classList.add("hidden"); 
-                    if(banner) banner.classList.add("hidden"); 
-                    if(colWrapper) colWrapper.classList.remove("bg-slate-200/80"); 
-                }
-
-                const dayVisits = visitsArray.filter(v => v.fecha === currentDateStr && (
-                    searchQuery === "" || v.obra.toLowerCase().includes(searchQuery) || v.cui.includes(searchQuery) || v.encargado.toLowerCase().includes(searchQuery)
-                ));
-
-                const container = document.getElementById(`visits-container-${d}`); 
-                if(!container) continue;
-                container.innerHTML = "";
-
-                if (dayVisits.length === 0) {
-                    container.innerHTML = `<div class="h-24 border-2 border-dashed border-slate-300 rounded-xl flex items-center justify-center text-slate-400 text-xs">Sin visitas</div>`;
-                } else {
-                    dayVisits.forEach(v => {
-                        kpis.total++; kpis[v.estado.toLowerCase()]++;
-                        let styles = { border: "border-l-sky-500 border-sky-200", bg: "bg-sky-50", text: "text-sky-800" };
-                        if(v.estado === "Realizado") styles = { border: "border-l-emerald-500 border-emerald-200", bg: "bg-emerald-50", text: "text-emerald-800" };
-                        if(v.estado === "Suspendido") styles = { border: "border-l-rose-500 border-rose-200", bg: "bg-rose-50", text: "text-rose-800" };
-                        if(v.estado === "Otros") styles = { border: "border-l-amber-500 border-amber-200", bg: "bg-amber-50", text: "text-amber-800" };
-
-                        const listTitulares = (v.titulares || []).map(t => `<span class="bg-white border px-1.5 py-0.5 rounded text-slate-600 font-medium">${t}</span>`).join('');
-
-                        const cardHtml = `
-                            <div class="bg-white rounded-xl border-l-4 ${styles.border} shadow-xs p-3.5 card-transition relative group hover:shadow-md">
-                                <div class="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button onclick="editVisit('${v.id}', ${d})" class="text-slate-400 hover:text-slate-700 p-1"><i class="fa-solid fa-pen text-xs"></i></button>
-                                    <button onclick="deleteVisit('${v.id}')" class="text-slate-400 hover:text-rose-600 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
-                                </div>
-                                <div class="text-[10px] text-slate-400 font-semibold mb-1"><i class="fa-solid fa-clock"></i> ${v.hora} • <span class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 uppercase font-bold">${v.notificacion}</span></div>
-                                <p class="text-xs text-slate-800 font-semibold mb-1.5 leading-tight pr-6">${v.obra}</p>
-                                <div class="text-[10px] text-slate-400 font-mono mb-2">CUI: ${v.cui}</div>
-                                <div class="text-xs text-slate-600 mb-1.5">👤 Encargado: <strong>${v.encargado}</strong></div>
-                                <div class="text-[10px] bg-slate-50 p-1.5 rounded border border-slate-200 mb-2.5">
-                                    <div class="text-[9px] uppercase font-bold text-slate-400 mb-1">Comité Titular:</div>
-                                    <div class="flex flex-wrap gap-1">${listTitulares}</div>
-                                </div>
-                                <select onchange="updateVisitStatus('${v.id}', this.value)" class="text-xs font-semibold py-1 px-2.5 rounded-full border ${styles.bg} ${styles.text} w-full cursor-pointer focus:outline-none">
-                                    <option value="Pendiente" ${v.estado === "Pendiente" ? "selected" : ""}>Pendiente</option>
-                                    <option value="Realizado" ${v.estado === "Realizado" ? "selected" : ""}>Realizado</option>
-                                    <option value="Suspendido" ${v.estado === "Suspendido" ? "selected" : ""}>Suspendido</option>
-                                    <option value="Otros" ${v.estado === "Otros" ? "selected" : ""}>Otros</option>
-                                </select>
-                            </div>
-                        `;
-                        container.insertAdjacentHTML('beforeend', cardHtml);
-                    });
-                }
-            }
-            document.getElementById("kpi-total").textContent = kpis.total;
-            document.getElementById("kpi-realizado").textContent = kpis.realizado;
-            document.getElementById("kpi-suspendido").textContent = kpis.suspendido;
-            document.getElementById("kpi-pendiente").textContent = kpis.pendiente;
-            document.getElementById("kpi-otros").textContent = kpis.otros;
-        }
-
-        function applyFilters() { renderCurrentWeek(); }
-
-        function renderCheckboxesTitulares(seleccionados = []) {
-            const contenedor = document.getElementById("contenedorTitulares"); contenedor.innerHTML = "";
-            listaIntegrantesDisponibles.forEach(integrante => {
-                const estaChecked = seleccionados.includes(integrante) ? "checked" : "";
-                contenedor.insertAdjacentHTML('beforeend', `
-                    <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer p-1">
-                        <input type="checkbox" name="titulares" value="${integrante}" ${estaChecked} class="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"> <span class="truncate">${integrante}</span>
-                    </label>
-                `);
-            });
-        }
-
-        function agregarIntegranteLista() {
-            const input = document.getElementById("nuevoIntegranteInput"); const nombre = input.value.trim();
-            if (nombre === "") return;
-            if (!listaIntegrantesDisponibles.includes(nombre)) { listaIntegrantesDisponibles.push(nombre); }
-            const checkboxes = document.getElementsByName("titulares"); const actualmenteSeleccionados = [];
-            checkboxes.forEach(cb => { if (cb.checked) actualmenteSeleccionados.push(cb.value); });
-            if (!actualmenteSeleccionados.includes(nombre)) actualmenteSeleccionados.push(nombre);
-            renderCheckboxesTitulares(actualmenteSeleccionados); input.value = ""; input.focus();
-        }
-
-        function openAddModal(dayIndex) {
-            document.getElementById("visitForm").reset(); document.getElementById("visitId").value = "";
-            document.getElementById("visitDayIndex").value = dayIndex;
-            const dates = getWeekDaysDates(weeksOf2026[currentWeekIndex]); document.getElementById("formFecha").value = dates[dayIndex];
-            renderCheckboxesTitulares(listaIntegrantesDisponibles);
-            document.getElementById("visitModal").classList.remove("hidden");
-        }
-
-        function editVisit(id, dayIndex) {
-            const v = visits[id]; if (!v) return;
-            document.getElementById("visitId").value = id; document.getElementById("visitDayIndex").value = dayIndex;
-            document.getElementById("formFecha").value = v.fecha; document.getElementById("formHora").value = v.hora;
-            document.getElementById("formObra").value = v.obra; document.getElementById("formCUI").value = v.cui;
-            document.getElementById("formNotificacion").value = v.notificacion; document.getElementById("formEncargado").value = v.encargado;
-            document.getElementById("formEstado").value = v.estado;
-            
-            const vTitulares = v.titulares || [];
-            vTitulares.forEach(t => { if (!listaIntegrantesDisponibles.includes(t)) { listaIntegrantesDisponibles.push(t); } });
-            renderCheckboxesTitulares(vTitulares); document.getElementById("visitModal").classList.remove("hidden");
-        }
-
-        function closeModal() { document.getElementById("visitModal").classList.add("hidden"); }
-
-        function handleFormSubmit(event) {
-            event.preventDefault();
-            const id = document.getElementById("visitId").value;
-            const data = {
-                fecha: document.getElementById("formFecha").value,
-                hora: document.getElementById("formHora").value,
-                obra: document.getElementById("formObra").value,
-                cui: document.getElementById("formCUI").value,
-                notificacion: document.getElementById("formNotificacion").value,
-                encargado: document.getElementById("formEncargado").value,
-                estado: document.getElementById("formEstado").value,
-                titulares: Array.from(document.getElementsByName("titulares")).filter(cb => cb.checked).map(cb => cb.value)
-            };
-
-            if (data.titulares.length === 0) { 
-                alert("Alerta: Selecciona al menos un miembro titular para el comité.");
-                return; 
-            }
-
-            const targetId = id ? id : 'visita_' + Date.now();
+        if (isOfflineMode) {
+            visits[targetId] = data;
+            localStorage.setItem("sglo_visitas_locales", JSON.stringify(visits));
+            renderCurrentWeek();
+        } else {
             set(ref(db, 'visitas/' + targetId), data);
-            closeModal();
         }
+        closeModal();
+    }
 
-        function updateVisitStatus(id, newStatus) {
+    window.updateVisitStatus = function(id, newStatus) {
+        if (isOfflineMode) {
+            if (visits[id]) { visits[id].estado = newStatus; localStorage.setItem("sglo_visitas_locales", JSON.stringify(visits)); renderCurrentWeek(); }
+        } else {
             update(ref(db, 'visitas/' + id), { estado: newStatus });
         }
+    }
 
-        function deleteVisit(id) {
-            if (confirm("¿Seguro que deseas eliminar esta visita?")) {
+    window.deleteVisit = function(id) {
+        if (confirm("¿Estás seguro de que deseas eliminar esta visita de campo?")) {
+            if (isOfflineMode) {
+                delete visits[id];
+                localStorage.setItem("sglo_visitas_locales", JSON.stringify(visits));
+                renderCurrentWeek();
+            } else {
                 remove(ref(db, 'visitas/' + id));
             }
         }
+    }
 
-        // ==========================================
-        // 🚀 VINCULACIÓN AL CONTEXTO DE NAVEGADOR GLOBAL (EXPLICITO)
-        // ==========================================
-        window.changeWeek = changeWeek;
-        window.onWeekSelectChange = onWeekSelectChange;
-        window.goToCurrentWeek = goToCurrentWeek;
-        window.openAddModal = openAddModal;
-        window.editVisit = editVisit;
-        window.closeModal = closeModal;
-        window.handleFormSubmit = handleFormSubmit;
-        window.updateVisitStatus = updateVisitStatus;
-        window.deleteVisit = deleteVisit;
-        window.agregarIntegranteLista = agregarIntegranteLista;
-        window.applyFilters = applyFilters;
-    </script>
-</body>
-</html>
+    window.clearDatabase = function() {
+        if (confirm("¿Deseas restaurar la agenda a los valores por defecto?")) {
+            if (isOfflineMode) {
+                visits = {...INITIAL_DEMO_DATA};
+                localStorage.setItem("sglo_visitas_locales", JSON.stringify(visits));
+                renderCurrentWeek();
+            } else {
+                set(ref(db, 'visitas'), INITIAL_DEMO_DATA);
+            }
+        }
+    }
+
+    // Arranque Inicial
+    generateWeeksOf2026();
+    populateWeekSelector();
+    goToCurrentWeek();
+</script>
