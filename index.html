@@ -4,10 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SGLO - Calendario Semanal Interactivo de Visitas 2026</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
@@ -17,6 +20,7 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
+    <!-- CABECERA PRINCIPAL -->
     <header class="bg-slate-900 text-white py-6 px-8 shadow-md">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
@@ -38,8 +42,10 @@
         </div>
     </header>
 
+    <!-- ÁREA DE CONTROL, FILTROS Y MÉTRICAS -->
     <section class="max-w-7xl mx-auto w-full px-6 py-6 flex-grow">
         
+        <!-- BARRA DE CONTROLES PRINCIPALES -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-6">
             <div class="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
                 
@@ -66,6 +72,7 @@
             </div>
         </div>
 
+        <!-- INDICADORES CLAVE (KPIS) -->
         <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
                 <div><p class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Total Semana</p><p id="kpi-total" class="text-2xl font-bold text-slate-800 mt-1">0</p></div>
@@ -89,6 +96,7 @@
             </div>
         </div>
 
+        <!-- PLANIFICADOR SEMANAL: GRILLA -->
         <div class="grid grid-cols-1 lg:grid-cols-5 gap-4 items-stretch">
             <!-- Columnas del calendario -->
             <template id="column-template">
@@ -118,6 +126,7 @@
         </div>
     </section>
 
+    <!-- MODAL PARA AGREGAR/EDITAR VISITA -->
     <div id="visitModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
         <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-xl overflow-hidden card-transition">
             <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white">
@@ -128,9 +137,6 @@
                 <input type="hidden" id="visitId">
                 <input type="hidden" id="visitDayIndex">
                 
-                <!-- Alerta interna para evitar el uso de alert() -->
-                <div id="modalError" class="hidden bg-rose-50 text-rose-800 border border-rose-200 rounded-lg p-3 text-xs font-semibold"></div>
-
                 <div class="grid grid-cols-2 gap-4">
                     <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Fecha</label><input type="date" id="formFecha" required readonly class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg block w-full p-2.5 font-medium cursor-not-allowed"></div>
                     <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Hora</label><input type="text" id="formHora" placeholder="Ej. 09:30 AM" required class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg block w-full p-2.5"></div>
@@ -141,7 +147,6 @@
                     <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Notificación</label><select id="formNotificacion" required class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg block w-full p-2.5"><option value="Notificado">Notificado</option><option value="Con carta">Con carta</option><option value="Por programar">Por programar</option></select></div>
                 </div>
                 <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Encargado</label><select id="formEncargado" required class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg block w-full p-2.5"><option value="Gabriel">Gabriel</option><option value="Luis">Luis</option><option value="Hugo">Hugo</option><option value="Néstor Antequera">Néstor Antequera</option></select></div>
-                
                 <div>
                     <label class="block text-xs font-semibold text-slate-500 uppercase mb-1.5">Miembros Titulares del Comité</label>
                     <div class="flex gap-2 mb-2">
@@ -150,34 +155,19 @@
                     </div>
                     <div id="contenedorTitulares" class="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200 max-h-28 overflow-y-auto"></div>
                 </div>
-                
                 <div><label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Estado</label><select id="formEstado" required class="bg-slate-50 border border-slate-300 text-slate-800 text-sm rounded-lg block w-full p-2.5 font-semibold"><option value="Pendiente">Pendiente</option><option value="Realizado">Realizado</option><option value="Suspendido">Suspendido</option><option value="Otros">Otros</option></select></div>
                 <div class="flex justify-end gap-3 pt-4 border-t border-slate-100"><button type="button" onclick="closeModal()" class="border border-slate-300 px-4 py-2 rounded-xl text-sm transition">Cancelar</button><button type="submit" class="bg-slate-900 text-white px-5 py-2 rounded-xl text-sm transition">Guardar</button></div>
             </form>
         </div>
     </div>
 
-    <div id="deleteConfirmModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4">
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-sm overflow-hidden p-6 space-y-4">
-            <div class="text-center">
-                <div class="h-12 w-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3 border border-rose-100">
-                    <i class="fa-solid fa-triangle-exclamation text-lg"></i>
-                </div>
-                <h4 class="font-bold text-slate-800 text-lg">¿Eliminar Visita?</h4>
-                <p class="text-slate-500 text-xs mt-1">Esta acción no se puede deshacer y se borrará de la nube de todos los compañeros.</p>
-            </div>
-            <div class="flex gap-3 pt-2">
-                <button onclick="closeDeleteModal()" class="flex-1 border border-slate-300 py-2.5 rounded-xl text-xs font-semibold hover:bg-slate-50 transition">Cancelar</button>
-                <button id="confirmDeleteBtn" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-xl text-xs font-semibold transition">Sí, Eliminar</button>
-            </div>
-        </div>
-    </div>
-
+    <!-- SCRIPTS CONEXIÓN FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-         // Import the functions you need from the SDKs you need
+        // ==========================================
+       // Import the functions you need from the SDKs you need
             import { initializeApp } from "firebase/app";
             import { getAnalytics } from "firebase/analytics";
             // TODO: Add SDKs for Firebase products that you want to use
@@ -188,6 +178,7 @@
             const firebaseConfig = {
               apiKey: "AIzaSyD_TkF7LCe2twnpbj2vSoPy6KEsvHqYPvE",
               authDomain: "visitas-sglo-sanmarcos.firebaseapp.com",
+              databaseURL: "https://visitas-sglo-sanmarcos-default-rtdb.firebaseio.com",
               projectId: "visitas-sglo-sanmarcos",
               storageBucket: "visitas-sglo-sanmarcos.firebasestorage.app",
               messagingSenderId: "272120103556",
@@ -198,6 +189,7 @@
             // Initialize Firebase
             const app = initializeApp(firebaseConfig);
             const analytics = getAnalytics(app);
+        // ==========================================
         const firebaseConfig = {
           apiKey: "AIzaSyA...",
           authDomain: "visitas-sglo-sanmarcos.firebaseapp.com",
@@ -217,18 +209,18 @@
         let visits = {};
         let weeksOf2026 = [];
         let currentWeekIndex = 25; // Semana default: 22 de Junio
-        let targetDeleteId = null;
         let listaIntegrantesDisponibles = ["Miguel Giron", "Segundo Giraldo", "Nestor Antequera"];
 
         const FERIADOS_2026 = {
             "2026-01-01": "Año Nuevo 🎆", "2026-04-02": "Jueves Santo ⛪", "2026-04-03": "Viernes Santo ⛪",
-            "2026-05-01": "Día del Trabajo 👷", "2026-06-07": "Batalla de Arica 🇵🇪", "2026-06-29": "San Pedro y San Pablo 👑",
+            "2026-05-01": "Día del Trabajo 👷", "2026-06-07": "Batalla de Arica 🇵🇪", "2026-06-29": "San Pedro y San Pablo ⛵",
             "2026-07-23": "Día de la Fuerza Aérea ✈️", "2026-07-28": "Fiestas Patrias 🇵🇪", "2026-07-29": "Fiestas Patrias 🇵🇪",
             "2026-08-06": "Batalla de Junín 🐎", "2026-08-30": "Santa Rosa de Lima 🌹", "2026-10-08": "Combate de Angamos ⚓",
             "2026-11-01": "Día de Todos los Santos 🕊️", "2026-12-08": "Inmaculada Concepción ⛪", "2026-12-09": "Batalla de Ayacucho ⚔️",
             "2026-12-25": "Navidad 🎄"
         };
 
+        // EVENT LISTENER DE INICIALIZACIÓN COMPLETA
         window.addEventListener('DOMContentLoaded', () => {
             initColumns();
             generateWeeksOf2026();
@@ -251,7 +243,7 @@
                 const clone = template.content.cloneNode(true);
                 clone.querySelector('.day-title').textContent = day;
                 
-                // Configurar IDs
+                // Configurar IDs dinámicos únicos
                 clone.querySelector('.holiday-badge').id = `holiday-badge-${index}`;
                 clone.querySelector('.holiday-banner').id = `holiday-banner-${index}`;
                 clone.querySelector('.holiday-text').id = `holiday-text-${index}`;
@@ -260,6 +252,9 @@
                 
                 const wrapper = clone.querySelector('div');
                 wrapper.id = `column-wrapper-${index}`;
+
+                const dateLabel = clone.querySelector('.date-label');
+                if (dateLabel) { dateLabel.id = `date-label-${index}`; }
 
                 document.getElementById(`column-${index}`).appendChild(clone);
             });
@@ -287,14 +282,16 @@
             });
         }
 
-        window.changeWeek = function(direction) {
+        function changeWeek(direction) {
             let nextIndex = currentWeekIndex + direction;
             if (nextIndex >= 0 && nextIndex < weeksOf2026.length) { goToWeek(nextIndex); }
         }
-        window.onWeekSelectChange = function(index) { goToWeek(parseInt(index)); }
+        
+        function onWeekSelectChange(index) { goToWeek(parseInt(index)); }
+        
         function goToWeek(index) { currentWeekIndex = index; document.getElementById("weekSelector").value = index; renderCurrentWeek(); }
 
-        window.goToCurrentWeek = function() {
+        function goToCurrentWeek() {
             const today = new Date();
             let compDate = today.getFullYear() === 2026 ? today : new Date("2026-06-24T00:00:00");
             const day = compDate.getDay();
@@ -326,7 +323,11 @@
 
             for (let d = 0; d < 5; d++) {
                 const currentDateStr = weekDates[d];
-                document.getElementById(`date-label-${d}`).textContent = `${currentDateStr.split("-")[2]}/${currentDateStr.split("-")[1]}/${currentDateStr.split("-")[0]}`;
+                
+                const dateLabelElement = document.getElementById(`date-label-${d}`);
+                if (dateLabelElement) {
+                    dateLabelElement.textContent = `${currentDateStr.split("-")[2]}/${currentDateStr.split("-")[1]}/${currentDateStr.split("-")[0]}`;
+                }
                 
                 const holidayName = FERIADOS_2026[currentDateStr];
                 const badge = document.getElementById(`holiday-badge-${d}`);
@@ -335,17 +336,23 @@
                 const colWrapper = document.getElementById(`column-wrapper-${d}`);
 
                 if (holidayName) { 
-                    badge.classList.remove("hidden"); banner.classList.remove("hidden"); 
-                    txt.textContent = holidayName; colWrapper.classList.add("bg-slate-200/80"); 
+                    if(badge) badge.classList.remove("hidden"); 
+                    if(banner) banner.classList.remove("hidden"); 
+                    if(txt) txt.textContent = holidayName; 
+                    if(colWrapper) colWrapper.classList.add("bg-slate-200/80"); 
                 } else { 
-                    badge.classList.add("hidden"); banner.classList.add("hidden"); colWrapper.classList.remove("bg-slate-200/80"); 
+                    if(badge) badge.classList.add("hidden"); 
+                    if(banner) banner.classList.add("hidden"); 
+                    if(colWrapper) colWrapper.classList.remove("bg-slate-200/80"); 
                 }
 
                 const dayVisits = visitsArray.filter(v => v.fecha === currentDateStr && (
                     searchQuery === "" || v.obra.toLowerCase().includes(searchQuery) || v.cui.includes(searchQuery) || v.encargado.toLowerCase().includes(searchQuery)
                 ));
 
-                const container = document.getElementById(`visits-container-${d}`); container.innerHTML = "";
+                const container = document.getElementById(`visits-container-${d}`); 
+                if(!container) continue;
+                container.innerHTML = "";
 
                 if (dayVisits.length === 0) {
                     container.innerHTML = `<div class="h-24 border-2 border-dashed border-slate-300 rounded-xl flex items-center justify-center text-slate-400 text-xs">Sin visitas</div>`;
@@ -363,7 +370,7 @@
                             <div class="bg-white rounded-xl border-l-4 ${styles.border} shadow-xs p-3.5 card-transition relative group hover:shadow-md">
                                 <div class="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button onclick="editVisit('${v.id}', ${d})" class="text-slate-400 hover:text-slate-700 p-1"><i class="fa-solid fa-pen text-xs"></i></button>
-                                    <button onclick="openDeleteModal('${v.id}')" class="text-slate-400 hover:text-rose-600 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
+                                    <button onclick="deleteVisit('${v.id}')" class="text-slate-400 hover:text-rose-600 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
                                 </div>
                                 <div class="text-[10px] text-slate-400 font-semibold mb-1"><i class="fa-solid fa-clock"></i> ${v.hora} • <span class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600 uppercase font-bold">${v.notificacion}</span></div>
                                 <p class="text-xs text-slate-800 font-semibold mb-1.5 leading-tight pr-6">${v.obra}</p>
@@ -392,9 +399,9 @@
             document.getElementById("kpi-otros").textContent = kpis.otros;
         }
 
-        window.applyFilters = function() { renderCurrentWeek(); }
+        function applyFilters() { renderCurrentWeek(); }
 
-        window.renderCheckboxesTitulares = function(seleccionados = []) {
+        function renderCheckboxesTitulares(seleccionados = []) {
             const contenedor = document.getElementById("contenedorTitulares"); contenedor.innerHTML = "";
             listaIntegrantesDisponibles.forEach(integrante => {
                 const estaChecked = seleccionados.includes(integrante) ? "checked" : "";
@@ -406,7 +413,7 @@
             });
         }
 
-        window.agregarIntegranteLista = function() {
+        function agregarIntegranteLista() {
             const input = document.getElementById("nuevoIntegranteInput"); const nombre = input.value.trim();
             if (nombre === "") return;
             if (!listaIntegrantesDisponibles.includes(nombre)) { listaIntegrantesDisponibles.push(nombre); }
@@ -416,19 +423,17 @@
             renderCheckboxesTitulares(actualmenteSeleccionados); input.value = ""; input.focus();
         }
 
-        window.openAddModal = function(dayIndex) {
+        function openAddModal(dayIndex) {
             document.getElementById("visitForm").reset(); document.getElementById("visitId").value = "";
             document.getElementById("visitDayIndex").value = dayIndex;
-            document.getElementById("modalError").classList.add("hidden");
             const dates = getWeekDaysDates(weeksOf2026[currentWeekIndex]); document.getElementById("formFecha").value = dates[dayIndex];
             renderCheckboxesTitulares(listaIntegrantesDisponibles);
             document.getElementById("visitModal").classList.remove("hidden");
         }
 
-        window.editVisit = function(id, dayIndex) {
+        function editVisit(id, dayIndex) {
             const v = visits[id]; if (!v) return;
             document.getElementById("visitId").value = id; document.getElementById("visitDayIndex").value = dayIndex;
-            document.getElementById("modalError").classList.add("hidden");
             document.getElementById("formFecha").value = v.fecha; document.getElementById("formHora").value = v.hora;
             document.getElementById("formObra").value = v.obra; document.getElementById("formCUI").value = v.cui;
             document.getElementById("formNotificacion").value = v.notificacion; document.getElementById("formEncargado").value = v.encargado;
@@ -439,14 +444,11 @@
             renderCheckboxesTitulares(vTitulares); document.getElementById("visitModal").classList.remove("hidden");
         }
 
-        window.closeModal = function() { document.getElementById("visitModal").classList.add("hidden"); }
+        function closeModal() { document.getElementById("visitModal").classList.add("hidden"); }
 
-        window.handleFormSubmit = function(event) {
+        function handleFormSubmit(event) {
             event.preventDefault();
             const id = document.getElementById("visitId").value;
-            const errorDiv = document.getElementById("modalError");
-            errorDiv.classList.add("hidden");
-
             const data = {
                 fecha: document.getElementById("formFecha").value,
                 hora: document.getElementById("formHora").value,
@@ -459,8 +461,7 @@
             };
 
             if (data.titulares.length === 0) { 
-                errorDiv.textContent = "Alerta: Selecciona al menos un miembro titular para el comité.";
-                errorDiv.classList.remove("hidden");
+                alert("Alerta: Selecciona al menos un miembro titular para el comité.");
                 return; 
             }
 
@@ -469,26 +470,30 @@
             closeModal();
         }
 
-        window.updateVisitStatus = function(id, newStatus) {
+        function updateVisitStatus(id, newStatus) {
             update(ref(db, 'visitas/' + id), { estado: newStatus });
         }
 
-        window.openDeleteModal = function(id) {
-            targetDeleteId = id;
-            document.getElementById("deleteConfirmModal").classList.remove("hidden");
-        }
-
-        window.closeDeleteModal = function() {
-            targetDeleteId = null;
-            document.getElementById("deleteConfirmModal").classList.add("hidden");
-        }
-
-        document.getElementById("confirmDeleteBtn").addEventListener('click', () => {
-            if (targetDeleteId) {
-                remove(ref(db, 'visitas/' + targetDeleteId));
-                closeDeleteModal();
+        function deleteVisit(id) {
+            if (confirm("¿Seguro que deseas eliminar esta visita?")) {
+                remove(ref(db, 'visitas/' + id));
             }
-        });
+        }
+
+        // ==========================================
+        // 🚀 VINCULACIÓN AL CONTEXTO DE NAVEGADOR GLOBAL (EXPLICITO)
+        // ==========================================
+        window.changeWeek = changeWeek;
+        window.onWeekSelectChange = onWeekSelectChange;
+        window.goToCurrentWeek = goToCurrentWeek;
+        window.openAddModal = openAddModal;
+        window.editVisit = editVisit;
+        window.closeModal = closeModal;
+        window.handleFormSubmit = handleFormSubmit;
+        window.updateVisitStatus = updateVisitStatus;
+        window.deleteVisit = deleteVisit;
+        window.agregarIntegranteLista = agregarIntegranteLista;
+        window.applyFilters = applyFilters;
     </script>
 </body>
 </html>
